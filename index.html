@@ -237,8 +237,9 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
     <label class="fld grow" for="q">ค้นหารหัส / ชื่อบัญชี<input type="search" id="q" placeholder="เช่น 4301020105 หรือ ค่าตอบแทน"></label>
     <label class="fld" for="base">ปีฐานสำหรับคัดกรอง/เรียง
       <select id="base"><optgroup label="งบทดลองของ รพ."><option value="o2569">รพ. 2569</option><option value="o2568">รพ. 2568</option><option value="o2567">รพ. 2567</option></optgroup><optgroup label="ค่ากลางกลุ่ม"><option value="p2569">กลุ่ม 2569</option><option value="p2568">กลุ่ม 2568</option><option value="p2567">กลุ่ม 2567</option></optgroup></select></label>
-    <label class="fld" for="thr">เกณฑ์เปลี่ยนแปลง
-      <select id="thr"><option value="10">±10%</option><option value="20" selected>±20%</option><option value="30">±30%</option><option value="50">±50%</option><option value="100">±100%</option></select></label>
+    <label class="fld" for="thr">เกณฑ์เปลี่ยนแปลง ± (%)
+      <span class="inl"><input type="number" id="thr" min="0" step="any" value="20" list="thrlist" inputmode="decimal" aria-describedby="thrhint"><span id="thrhint" style="color:var(--muted)">%</span></span>
+      <datalist id="thrlist"><option value="5"><option value="10"><option value="15"><option value="20"><option value="30"><option value="50"><option value="100"></datalist></label>
     <label class="fld" for="sort">เรียงตาม
       <select id="sort"><option value="code">รหัสบัญชี</option><option value="pct">|% เปลี่ยนแปลง| มาก→น้อย</option><option value="baht">|ส่วนต่างบาท| มาก→น้อย</option><option value="plan">ยอดแผน 2570 มาก→น้อย</option></select></label>
     <label class="chk" for="onlyflag"><input type="checkbox" id="onlyflag"> เฉพาะรายการที่เกินเกณฑ์</label>
@@ -621,7 +622,7 @@ function segWire(id, key){
 segWire('seg','type'); segWire('pstat','stat'); segWire('pscale','scale');
 let qt; $('#q').addEventListener('input',e=>{ clearTimeout(qt); qt=setTimeout(()=>{st.q=e.target.value.trim(); render();},150); });
 $('#base').addEventListener('change',e=>{st.base=e.target.value;render();});
-$('#thr').addEventListener('change',e=>{st.thr=+e.target.value;render();});
+let tt; $('#thr').addEventListener('input',e=>{ clearTimeout(tt); tt=setTimeout(()=>{ const v=parseFloat(e.target.value); if(isFinite(v)&&v>=0){ st.thr=v; render(); } },250); });
 $('#sort').addEventListener('change',e=>{st.sort=e.target.value;render();});
 $('#onlyflag').addEventListener('change',e=>{st.onlyflag=e.target.checked;render();});
 $('#hidezero').addEventListener('change',e=>{st.hidezero=e.target.checked;render();});
