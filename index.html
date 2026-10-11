@@ -28,6 +28,7 @@
   --down:#ff9a5c; --down-bg:#3a2214; --down-strong:#d9661f;
   --warn-bg:#3a2f10; --warn-ink:#f2cf74; --peer:#b59ce6; --peer-soft:#251d36; --peer-ink:#d9cdf3; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
 .wrap{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:20px 48px;display:grid;gap:18px}
 @media (max-width:600px){.wrap{padding-inline:16px}}
@@ -153,6 +154,40 @@ tr.kid td.nm{padding-left:30px}
 .sg{font-family:var(--f-num);font-weight:600;color:var(--accent)}
 tr.kid td{font-size:12.5px;color:var(--muted)}
 tr.kid td.amt.plan{color:var(--ink)}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+.tabs button{font:inherit;font-family:var(--f-display);font-size:15.5px;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 16px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.badge{font-family:var(--f-body);font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 8px}
+.badge.bad{background:var(--down-bg);color:var(--down)}
+.badge.good{background:var(--up-bg);color:var(--up)}
+.viewcmp,.balwrap{display:grid;gap:18px}
+.balintro{display:grid;gap:8px}
+.balintro h2{font-size:18px;font-weight:600}
+.tol{font:inherit;font-family:var(--f-num);width:80px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.balsum{display:flex;flex-wrap:wrap;gap:8px}
+.balcards{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.balcard{display:grid;gap:10px;align-content:start}
+.balcard h3{font-size:15px;font-weight:600;display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.balcard h3 .no{font-family:var(--f-num);color:var(--muted);font-weight:500;margin-right:6px}
+.baltab{overflow-x:auto}
+.baltab table{min-width:560px;font-size:13px}
+.baltab th,.baltab td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.baltab th{background:var(--surface-2);font-size:12px;color:var(--muted);position:static}
+.baltab th.plan,.baltab td.plan{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.baltab th.plan{color:var(--accent)}
+.baltab td.l,.baltab th.l{text-align:left;white-space:normal;min-width:150px}
+.baltab tr.sub td.l{min-width:220px}
+.balcard h3+.hospmeta{margin-top:-6px}
+.baltab td.amt{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.baltab tr.diff td{font-weight:600}
+.baltab .lbl small{display:block;font-family:var(--f-num);font-size:11px;color:var(--muted);font-weight:400}
+.st{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.st.ok{background:var(--up-bg);color:var(--up)}
+.st.bad{background:var(--down-bg);color:var(--down)}
+.st.na{background:var(--surface-2);color:var(--faint)}
+.balcard details summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:500}
+.balcard tr.sub td{font-size:12.5px;color:var(--muted)}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 .credit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:2px;font-size:13px;color:var(--muted)}
@@ -196,6 +231,12 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
     </div>
   </section>
 
+  <nav class="tabs" role="tablist" aria-label="มุมมอง">
+    <button type="button" role="tab" id="tab-cmp" aria-selected="true" aria-controls="view-cmp" data-view="cmp">เทียบแผนรายบรรทัด</button>
+    <button type="button" role="tab" id="tab-bal" aria-selected="false" aria-controls="view-bal" data-view="bal">ตรวจดุลงบประมาณ <span class="badge" id="balbadge"></span></button>
+  </nav>
+
+  <div id="view-cmp" class="viewcmp">
   <section class="card peer" aria-labelledby="peerh">
     <div class="peerhead">
       <div><h2 id="peerh">กลุ่มเปรียบเทียบ (โรงพยาบาลในกลุ่มเดียวกัน เขต 1)</h2>
@@ -255,6 +296,16 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
       <tbody id="tb"></tbody>
     </table>
   </div>
+  </div>
+
+  <section id="view-bal" class="balwrap" hidden aria-labelledby="balh">
+    <div class="card balintro">
+      <h2 id="balh">ตรวจดุลงบประมาณ</h2>
+      <div class="hospmeta">บัญชีรายได้รับเงินงบบุคลากรจากรัฐบาล (4307010103.201) ต้องเท่ากับผลรวมของบัญชีเงินเดือน ค่าจ้าง ค่าตอบแทน ค่าครองชีพ และเงินเพิ่ม 19 บัญชี · ถือว่าสมดุลเมื่อส่วนต่างไม่เกิน ± <input type="number" id="baltol" min="0" step="any" value="1" aria-label="ส่วนต่างที่ยอมรับ (บาท)" class="tol"> บาท · ปี 2567–2569 เป็นงบทดลองจริงของ รพ. ใช้ดูประกอบ</div>
+      <div class="balsum" id="balsum"></div>
+    </div>
+    <div id="balcards" class="balcards"></div>
+  </section>
 
   <footer>
     <div>ค่ารักษาตามจ่ายในจังหวัด (สุทธิ) = 5104030299.202 − 4301020105.271 − 4301020105.240</div>
@@ -296,6 +347,9 @@ const GROUPS = [
   {id:'food', sec:'5', name:'ค่าจ้างเหมาประกอบอาหาร + วัสดุบริโภค (รวม)', codes:['5104030205.112','5104010112.103']},
   {id:'refer', sec:'5', name:'ค่ารักษาตามจ่ายในจังหวัด (สุทธิ)', codes:['5104030299.202','4301020105.271','4301020105.240'], neg:['4301020105.271','4301020105.240']},
 ];
+const BAL = [
+  {no:1, rev:'4307010103.201', name:'เงินงบบุคลากรจากรัฐบาล', exp:["5101010101.101", "5101010101.102", "5101010103.101", "5101010103.102", "5101010103.103", "5101010113.101", "5101010113.102", "5101010115.101", "5101010115.102", "5101010116.101", "5101010116.102", "5101010116.103", "5101010116.104", "5101010116.105", "5101010116.106", "5101010199.101", "5101010199.102", "5101020114.126", "5101020114.127"]},
+];
 const gsec = g => g.sec || g.codes[0][0];
 const sgn = (g,c) => g.neg && g.neg.includes(c) ? -1 : 1;
 const $ = s => document.querySelector(s);
@@ -306,7 +360,7 @@ const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 const short = n => String(n||'').replace('โรงพยาบาล','รพ.');
 
 const st = {plan:null, planHosp:null, planName:'', planFile:'', planNames:{}, isSample:false, hosp:null, warn:'',
-  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
+  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
   pby:'level', popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
 let PEER = {list:[], v:{}, tot:{}};
 
@@ -484,7 +538,7 @@ function cells(r){
        + PY().map(y=>amt(r.p[y],'pv pk')+`<td class="pc pk">${pillHTML(r.pc?r.pc[y]:pct(r.plan,r.p[y]))}</td>`).join('');
 }
 function render(){
-  computePeers(); renderPeerPanel(); renderHeadRow();
+  computePeers(); renderPeerPanel(); renderHeadRow(); renderBalance();
   const all = buildRows(), groups = buildGroups(all);
   const {r4,r5} = renderKPI(all);
   const q = st.q.toLowerCase();
@@ -543,6 +597,36 @@ function render(){
   });
   $('#tb').innerHTML = html;
   window.__rows = st.type==='G' ? gs : (st.type==='all' ? [...gs, ...rows] : rows);
+}
+
+// ---------- budget balance checks ----------
+function renderBalance(){
+  const tol = st.tol;
+  const cols = [{k:'plan', lbl:'แผน 2570', get:c=>st.plan?(st.plan[c]||0):null}, ...YEARS.map(y=>({k:y, lbl:'งบทดลอง '+y, get:c=>TB.y[y][st.hosp]?hist(y,c):null}))];
+  const nm = c => esc(TB.acc[c] || st.planNames[c] || '');
+  const chip = d => d==null ? '<span class="st na">ไม่มีข้อมูล</span>' : (Math.abs(d)<=tol ? '<span class="st ok">✓ สมดุล</span>' : '<span class="st bad">✕ ไม่สมดุล</span>');
+  let badPlan=0, okPlan=0;
+  $('#balcards').innerHTML = BAL.map(b=>{
+    const v = cols.map(col=>{ const r=col.get(b.rev); if(r==null) return null; const e=b.exp.reduce((a,c)=>a+col.get(c),0); return {r,e,d:r-e}; });
+    if(v[0]){ Math.abs(v[0].d)<=tol ? okPlan++ : badPlan++; }
+    const cell = (x,f,cls='') => cols.map((col,i)=>`<td class="amt ${i===0?'plan':''} ${cls}">${x[i]==null?'–':f(x[i])}</td>`).join('');
+    const sub = b.exp.map(c=>`<tr class="sub"><td class="l lbl">${nm(c)}<small>${c}</small></td>${cols.map((col,i)=>{const x=col.get(c);return `<td class="amt ${i===0?'plan':''}">${x==null?'–':fmt.format(x)}</td>`}).join('')}</tr>`).join('');
+    return `<article class="card balcard"><h3><span><span class="no">${b.no}.</span>${esc(b.name)}</span>${chip(v[0]?v[0].d:null)}</h3><div class="hospmeta">${b.rev} ${nm(b.rev)}</div>
+      <div class="baltab"><table>
+        <thead><tr><th class="l">รายการ</th>${cols.map((c,i)=>`<th class="${i===0?'plan':''}">${c.lbl}</th>`).join('')}</tr></thead>
+        <tbody>
+          <tr><td class="l lbl">รายได้รับโอน<small>${b.rev}</small></td>${cell(v,x=>fmt.format(x.r))}</tr>
+          <tr><td class="l lbl">รวมค่าใช้จ่ายที่ต้องเท่ากัน<small>${b.exp.length} บัญชี</small></td>${cell(v,x=>fmt.format(x.e))}</tr>
+          <tr class="diff"><td class="l">ส่วนต่าง (รายได้ − ค่าใช้จ่าย)</td>${cell(v,x=>(x.d>0?'+':'')+fmt2.format(x.d))}</tr>
+          <tr><td class="l">ผลตรวจ</td>${cols.map((col,i)=>`<td class="${i===0?'plan':''}">${chip(v[i]?v[i].d:null)}</td>`).join('')}</tr>
+        </tbody></table></div>
+      <details><summary>ดูบัญชีค่าใช้จ่าย ${b.exp.length} บัญชี</summary><div class="baltab"><table><tbody>${sub}</tbody></table></div></details>
+    </article>`;
+  }).join('');
+  const bb=$('#balbadge');
+  if(!st.plan){ bb.className='badge'; bb.textContent=''; $('#balsum').innerHTML='<span class="st na">ยังไม่มีไฟล์แผน · แสดงเฉพาะงบทดลองย้อนหลัง</span>'; return; }
+  bb.className = 'badge '+(badPlan?'bad':'good'); bb.textContent = badPlan ? `ไม่สมดุล ${badPlan}` : 'ผ่านทั้งหมด';
+  $('#balsum').innerHTML = `<span class="st ${badPlan?'bad':'ok'}">แผน 2570: สมดุล ${okPlan} จาก ${BAL.length} ข้อ</span>`;
 }
 
 // ---------- header / status ----------
@@ -638,6 +722,11 @@ function toggleG(id){ st.open.has(id)?st.open.delete(id):st.open.add(id); render
 $('#tb').addEventListener('click',e=>{ const tr=e.target.closest('tr.grow'); if(tr && e.target.closest('td.nm')) toggleG(tr.dataset.g); });
 $('#tb').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('tr.grow td.nm')){ e.preventDefault(); const id=e.target.parentElement.dataset.g; toggleG(id); const n=document.querySelector(`tr.grow[data-g="${id}"] td.nm`); if(n) n.focus(); } });
 $('#expand').addEventListener('click',()=>{ const all=GROUPS.every(g=>st.open.has(g.id)); st.open = all? new Set() : new Set(GROUPS.map(g=>g.id)); $('#expand').textContent = all?'ขยายหัวข้อรวมทั้งหมด':'ยุบหัวข้อรวมทั้งหมด'; render(); });
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected', x===b));
+  $('#view-cmp').hidden = b.dataset.view!=='cmp'; $('#view-bal').hidden = b.dataset.view!=='bal';
+}));
+let bt; $('#baltol').addEventListener('input',e=>{ clearTimeout(bt); bt=setTimeout(()=>{ const v=parseFloat(e.target.value); if(isFinite(v)&&v>=0){ st.tol=v; renderBalance(); } },250); });
 $('#copy').addEventListener('click',async ()=>{
   const p = c => c.p!=null ? c.p.toFixed(2) : (c.k==='new'?'ใหม่':'');
   const lbl = st.stat==='median'?'มัธยฐาน':'เฉลี่ย';
