@@ -200,6 +200,13 @@ tr.kid td.amt.plan{color:var(--ink)}
 .ptab tr.psec td{background:var(--accent-soft)!important;font-family:var(--f-display);font-weight:600;color:var(--accent);border-bottom:1px solid var(--accent)}
 .ptab .pid{font-family:var(--f-num);font-size:11.5px;color:var(--muted);font-weight:500;margin-right:6px}
 .ptab tr.psub.open .caret,.ptab tr.pcat.open .caret{transform:rotate(90deg)}
+.est{display:grid;gap:10px}
+.esthead{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-end;justify-content:space-between}
+.esthead h2{font-size:17px;font-weight:600}
+.baltab tr.esttot td{font-weight:700;border-top:1px solid var(--ink)}
+tr.estrow td{background:color-mix(in srgb,var(--warn-bg) 60%,var(--surface));font-size:13px}
+tr.estrow td.nm{background:color-mix(in srgb,var(--warn-bg) 60%,var(--surface));padding-left:30px}
+tr.estrow td.amt.plan{font-style:italic}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 .credit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:2px;font-size:13px;color:var(--muted)}
@@ -282,6 +289,15 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 
   <div id="view-cmp" class="viewcmp">
   <section class="kpis" id="kpis"></section>
+
+  <section class="card est" aria-labelledby="esth">
+    <div class="esthead"><h2 id="esth">ประมาณการรายได้ UC IP จากผลงานเดิม × อัตราใหม่</h2>
+      <label class="fld" for="ucrate">อัตราจ่าย AdjRW ในเขต (หัก Homeward) บาท/AdjRW
+        <input type="number" id="ucrate" min="0" step="any" value="5119" class="tol" style="width:120px"></label></div>
+    <div class="hospmeta" id="estsrc">ผลงาน SumAdjRW ปีงบ 69 จาก cmi.moph.go.th (ดึงข้อมูล 12 ต.ค. 69)</div>
+    <div class="baltab"><table><thead><tr><th class="l">ผลงาน</th><th>SumAdjRW</th><th>อัตรา (บาท)</th><th>ประมาณการ (บาท)</th></tr></thead><tbody id="estrows"></tbody></table></div>
+    <div class="balsum" id="estsum"></div>
+  </section>
 
   <div class="bar" role="toolbar" aria-label="ตัวกรองตาราง">
     <div class="seg" id="seg">
@@ -374,6 +390,9 @@ const GROUPS = [
 const BAL = [
   {no:1, rev:'4307010103.201', name:'เงินงบบุคลากรจากรัฐบาล', exp:["5101010101.101", "5101010101.102", "5101010103.101", "5101010103.102", "5101010103.103", "5101010113.101", "5101010113.102", "5101010115.101", "5101010115.102", "5101010116.101", "5101010116.102", "5101010116.103", "5101010116.104", "5101010116.105", "5101010116.106", "5101010199.101", "5101010199.102", "5101020114.126", "5101020114.127"]},
 ];
+const UCIP = {"06009":[27.1196,0.0,0.0,619.663],"10713":[2026.5979,2135.3832,803.2421,81038.775],"11119":[177.8458,83.2374,24.6295,22793.2279],"11120":[6.4937,0.0,0.0,2754.0723],"11121":[43.744,3.1184,0.0,4265.9926],"11122":[124.2458,0.0,0.0,3999.1526],"11123":[23.1498,0.0,0.0,3268.5367],"11124":[7.9158,0.0,0.0,2111.7574],"11125":[153.5665,105.2721,12.8596,15753.5732],"11126":[15.1219,0.0,0.0,4206.8637],"11127":[23.3491,0.0,0.0,2980.8058],"11128":[193.4015,33.476,4.705,16347.0392],"11129":[35.1844,0.0,0.0,2985.1976],"11130":[376.4672,131.5217,83.8265,18744.5633],"11131":[78.2965,0.0,0.0,5693.8925],"11132":[20.0583,0.0,0.0,4074.58],"11133":[11.0029,0.0,0.0,2612.7087],"11134":[35.8213,0.0,0.0,3523.1781],"11135":[49.6102,0.0,0.0,2941.8746],"11136":[8.6408,0.0,0.0,1082.2196],"11137":[16.0188,0.0,0.0,2017.5023],"11138":[10.2522,0.0,0.0,2227.7671],"11139":[23.5954,0.0,0.0,1915.1328],"11643":[26.8062,0.0,0.0,1423.82],"23736":[7.7008,0.0,0.0,1010.5069],"10714":[491.6663,240.2694,165.6352,37795.3714],"11140":[13.2009,0.0,0.0,2178.3041],"11141":[13.0305,0.0,0.0,1690.3916],"11142":[35.0705,0.0,0.0,7142.7217],"11143":[2.9912,0.0,0.0,1764.4157],"11144":[33.0148,0.0,0.0,4557.2385],"11145":[4.6186,0.0,0.0,1161.9648],"24956":[8.3269,0.0,0.0,959.3941],"10672":[1468.8612,420.0379,264.5403,92095.7643],"11146":[20.5528,0.0,0.0,1616.3508],"11147":[207.5851,0.0,0.0,18036.5541],"11148":[6.3989,0.0,0.0,3169.2671],"11149":[19.8485,0.0,0.0,2551.4964],"11150":[25.5319,0.0,0.0,2957.6435],"11151":[11.508,0.0,0.0,2197.2739],"11152":[72.6273,0.0,0.0,7719.8894],"11153":[8.1696,0.0,0.0,705.531],"11154":[14.8767,0.0,0.0,2775.3006],"11155":[9.3382,0.0,0.0,2414.3991],"11156":[15.7906,0.0,0.0,1932.5738],"11157":[14.8262,0.0,0.0,2043.716],"10715":[834.9367,164.2863,69.0922,46825.2181],"11166":[43.3076,0.0,0.0,2677.7058],"11167":[47.3913,0.0,0.0,2863.8725],"11169":[76.3228,0.0,0.0,4902.84],"11170":[53.4291,0.0,0.0,3271.1303],"11171":[40.7572,0.0,0.0,2276.868],"11172":[22.2609,0.0,0.0,1253.6852],"11452":[40.0772,0.0,0.0,2006.4653],"10716":[628.8909,211.6995,60.0858,44752.15],"11173":[8.6266,0.0,0.0,1330.9631],"11174":[6.3354,0.0,0.0,957.6834],"11175":[43.7068,0.0,0.0,2238.1635],"11176":[34.335,0.0,0.0,2071.4964],"11177":[97.3265,0.0,0.0,4716.7328],"11178":[11.1957,0.0,0.0,1096.3294],"11179":[19.4771,0.0,0.0,1534.129],"11180":[10.1185,0.0,0.0,1535.4006],"11181":[9.566,0.0,0.0,948.3696],"11182":[18.5001,0.0,0.0,1164.6359],"11183":[35.6726,0.0,0.0,1254.5642],"11453":[345.5249,0.0,0.0,11162.8883],"11625":[2.2764,0.0,0.0,644.4084],"25017":[12.4593,0.0,0.0,660.9261],"10717":[396.2933,215.5729,121.5649,30361.0566],"10718":[187.7049,25.5549,0.0,19007.8022],"11184":[14.3402,0.0,0.0,1901.7123],"11185":[10.9537,0.0,0.0,877.6687],"11186":[16.1641,0.0,0.0,3150.3639],"11187":[38.7097,0.0,0.0,3649.8847],"11188":[18.575,0.0,0.0,1751.7227],"10674":[1915.2192,1086.146,649.4024,101243.7436],"11189":[51.5347,0.0,0.0,4275.6439],"11190":[149.6526,0.0,0.0,11638.9594],"11191":[15.7944,0.0,0.0,1769.0505],"11192":[115.0513,0.0,0.0,10397.2915],"11193":[17.662,0.0,0.0,2024.5718],"11194":[209.475,6.6449,0.0,10606.4467],"11195":[16.0403,0.0,0.0,4004.1935],"11196":[33.7799,0.0,0.0,4521.9347],"11197":[81.2229,1.5892,0.0,4561.6337],"11198":[10.8404,0.0,0.0,1825.0405],"11199":[26.3647,0.0,0.0,2709.9753],"11200":[15.2584,0.0,0.0,1915.7099],"11201":[43.4299,0.0,0.0,3461.2476],"11202":[21.3655,0.0,0.0,2277.618],"11454":[77.5451,0.0,0.0,5069.5348],"15012":[26.7908,0.0,0.0,3436.0742],"10719":[45.9295,38.8864,0.0,5476.1198],"11203":[8.9829,0.0,0.0,1762.3836],"11204":[21.6756,0.0,0.0,2212.8581],"11205":[69.6958,94.6391,22.4143,4965.4328],"11206":[3.98,0.0,0.0,1963.1871],"11207":[121.8067,0.0,0.0,1463.1973],"11208":[15.9649,3.1184,0.0,1421.0692]}; // HCODE: [SumADj นอกเขต, NB<1500g, NB<1500g หัตถการราคาแพง, SumAdjRW ในเขตหัก Homeward]
+const UCIP_ITEMS = [['SumAdjRW นอกเขต',9600,0],['SumAdjRW ทารกแรกเกิด น้ำหนัก <1,500 g',9000,1],['SumAdjRW ทารกแรกเกิด <1,500 g มีหัตถการราคาแพง',9000,2],['SumAdjRW ในเขต หัก Homeward',null,3]];
+function ucipEst(h){ const d=UCIP[h]; if(!d) return null; return UCIP_ITEMS.reduce((a,[n,rate,i])=>a+d[i]*(rate??st.ucRate),0); }
 const gsec = g => g.sec || g.codes[0][0];
 const sgn = (g,c) => g.neg && g.neg.includes(c) ? -1 : 1;
 const $ = s => document.querySelector(s);
@@ -384,7 +403,7 @@ const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 const short = n => String(n||'').replace('โรงพยาบาล','รพ.');
 
 const st = {plan:null, planHosp:null, planName:'', planFile:'', planNames:{}, isSample:false, hosp:null, warn:'',
-  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
+  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
   pby:'level', popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
 let PEER = {list:[], v:{}, tot:{}};
 
@@ -566,6 +585,7 @@ function cells(r){
 function render(){
   computePeers(); renderPeerPanel(); renderHeadRow(); renderBalance(); renderPlanView();
   const all = buildRows(), groups = buildGroups(all);
+  renderEst(groups.find(g=>g.gid==='ucip')?.plan ?? null);
   const {r4,r5} = renderKPI(all);
   const q = st.q.toLowerCase();
   const keep = r => !(st.hidezero && r.allZero) && !(st.onlyflag && !r.flag);
@@ -605,6 +625,8 @@ function render(){
     const gRow = g=>{
       const open = st.open.has(g.gid);
       let h = `<tr class="grow${open?' open':''}${flagCls(g)}" data-g="${g.gid}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.kcodes.length} บัญชีย่อย</div></td>${amt(g.plan,'plan')}${cells(g)}</tr>`;
+      if(g.gid==='ucip'){ const e=ucipEst(st.hosp); if(e!=null){ const er={plan:e, v:g.v, p:{}};
+        h += `<tr class="estrow"><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่ ${st.plan?`<span class="cd">แผนสูง/ต่ำกว่าประมาณการ</span> ${pillHTML(pct(g.plan,e))}`:''}</div><div class="cd">ช่องแผน 2570 = ค่าประมาณการ · %Δ = ประมาณการเทียบงบทดลองแต่ละปี (บรรทัดบน)</div></td>${amt(e,'plan')}${OY().map(y=>`<td></td><td class="pc">${pillHTML(pct(e,g.v[y]))}</td>`).join('')}${PY().map(()=>'<td class="pk"></td><td class="pk"></td>').join('')}</tr>`; } }
       if(open) h += g.kids.map(k=>rowHTML(k,'kid', g.g.neg ? (sgn(g.g,k.code)<0?'<b class="sg">(−) หัก</b> ':'<b class="sg">(+)</b> ') : '')).join('');
       return h;
     };
@@ -682,6 +704,19 @@ function renderPlanView(){
   $('#pmapsrc').textContent = 'ที่มาของผัง: '+MAPSRC;
 }
 function togglePlan(k){ st.popen.has(k)?st.popen.delete(k):st.popen.add(k); renderPlanView(); const n=document.querySelector(`#ptb tr[data-p="${k}"] td.nm`); if(n) n.focus(); }
+
+// ---------- UC IP estimate ----------
+function renderEst(groupPlan){
+  const d=UCIP[st.hosp];
+  if(!d){ $('#estrows').innerHTML=`<tr><td class="l" colspan="4" style="color:var(--faint)">ไม่มีข้อมูลผลงาน AdjRW ของ รพ.นี้ในไฟล์</td></tr>`; $('#estsum').innerHTML=''; return; }
+  let tot=0;
+  $('#estrows').innerHTML = UCIP_ITEMS.map(([n,rate,i])=>{ const r=rate??st.ucRate, a=d[i]*r; tot+=a;
+    return `<tr><td class="l">${n}</td><td class="amt">${d[i].toLocaleString('th-TH',{maximumFractionDigits:4})}</td><td class="amt">${fmt.format(r)}</td><td class="amt">${fmt2.format(a)}</td></tr>`; }).join('')
+    + `<tr class="esttot"><td class="l">รวมประมาณการรายได้ UC IP</td><td></td><td></td><td class="amt">${fmt2.format(tot)}</td></tr>`;
+  if(groupPlan==null){ $('#estsum').innerHTML='<span class="st na">ยังไม่มีไฟล์แผน</span>'; return; }
+  const c=pct(groupPlan,tot);
+  $('#estsum').innerHTML = `<span class="tag">แผน 2570 รายได้ UC IP (รวม) <b class="num">&nbsp;${fmt.format(groupPlan)}</b></span><span class="tag">ส่วนต่างแผน − ประมาณการ <b class="num">&nbsp;${(groupPlan-tot>0?'+':'')+fmt.format(groupPlan-tot)}</b></span>${pillHTML(c)} <span class="hospmeta">${c.k==='up'?'แผนสูงกว่าประมาณการ':c.k==='down'?'แผนต่ำกว่าประมาณการ':''}</span>`;
+}
 
 // ---------- budget balance checks ----------
 function renderBalance(){
@@ -818,6 +853,7 @@ let bt; $('#baltol').addEventListener('input',e=>{ clearTimeout(bt); bt=setTimeo
 $('#ptb').addEventListener('click',e=>{ const tr=e.target.closest('tr[data-p]'); if(tr && e.target.closest('td.nm')) togglePlan(tr.dataset.p); });
 $('#ptb').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('tr[data-p] td.nm')){ e.preventDefault(); togglePlan(e.target.parentElement.dataset.p); } });
 $('#pexpand').addEventListener('click',()=>{ const ids=[...PREV,...PEXP].map(x=>x[0]); const all=ids.every(i=>st.popen.has(i)); st.popen = all? new Set() : new Set(ids); $('#pexpand').textContent = all?'ขยายทุกหมวด':'ยุบทุกหมวด'; renderPlanView(); });
+let ut; $('#ucrate').addEventListener('input',e=>{ clearTimeout(ut); ut=setTimeout(()=>{ const v=parseFloat(e.target.value); if(isFinite(v)&&v>=0){ st.ucRate=v; render(); } },250); });
 $('#copy').addEventListener('click',async ()=>{
   const p = c => c.p!=null ? c.p.toFixed(2) : (c.k==='new'?'ใหม่':'');
   const lbl = st.stat==='median'?'มัธยฐาน':'เฉลี่ย';
