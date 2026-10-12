@@ -758,7 +758,7 @@ function renderHead(){
   let s='';
   if(st.plan){
     s += st.isSample ? `<span class="tag sample">ไฟล์ตัวอย่าง</span>` : `<span class="tag ok">อัปโหลดแล้ว</span>`;
-    s += `<span>${esc(st.planFile)}</span><span class="tag">G2 = ${esc(st.planHosp||'ไม่พบ')}</span><span class="tag">${Object.keys(st.plan).length} บัญชี</span>`;
+    s += `<span>${esc(st.planFile)}</span><span class="tag">${esc(st.planCodeAt||'G2')} = ${esc(st.planHosp||'ไม่พบ')}</span><span class="tag">${Object.keys(st.plan).length} บัญชี</span>`;
     s += `<button class="btn" type="button" id="clear">ล้างไฟล์</button>`;
   } else s = `<span class="tag">ยังไม่มีไฟล์แผน · แสดงเฉพาะงบทดลองย้อนหลัง</span>`;
   $('#status').innerHTML = s;
@@ -772,6 +772,21 @@ function renderHead(){
 
 // ---------- file reading ----------
 function findSheet(names, test){ return names.find(test); }
+// Hospital code: G2 first, then nearby cells (rows 1–5, columns C–M) by distance, then the hospital name in E2
+function findHospCode(ws){
+  const val = a => { const c=ws[a]; return c && c.v!=null ? String(c.v).trim() : ''; };
+  const asCode = s => { const m=s.replace(/\.0+$/,'').match(/^\d{4,5}$/); return m ? m[0].padStart(5,'0') : null; };
+  const g=asCode(val('G2')); if(g && TB.hosp[g]) return {code:g, at:'G2'};
+  const cells=[];
+  for(let r=0;r<5;r++) for(let c=2;c<=12;c++){ const a=XLSX.utils.encode_cell({r,c}); if(a!=='G2') cells.push([Math.abs(r-1)*2+Math.abs(c-6), a]); }
+  cells.sort((x,y)=>x[0]-y[0]);
+  let loose = g ? {code:g, at:'G2'} : null;
+  for(const [,a] of cells){ const k=asCode(val(a)); if(!k) continue; if(TB.hosp[k]) return {code:k, at:a}; if(!loose) loose={code:k, at:a}; }
+  const norm = s => s.replace(/โรงพยาบาล|รพ\.?|\s/g,'');
+  for(const a of ['E2','D2','F2','C2','B2']){ const n=norm(val(a)); if(!n) continue;
+    const hit=Object.entries(TB.hosp).find(([c,[nm]])=>norm(nm)===n); if(hit) return {code:hit[0], at:'ชื่อ รพ. ช่อง '+a}; }
+  return loose || {code:null, at:''};
+}
 async function readFile(f){
   $('#status').innerHTML = `<span class="tag">กำลังอ่าน ${esc(f.name)} …</span>`;
   $('#alerts').innerHTML='';
@@ -784,10 +799,10 @@ async function readFile(f){
     if(!n5) throw new Error('ไม่พบแถบ “5.งบทดลอง รพ.” ในไฟล์นี้');
     const nm13 = findSheet(meta.SheetNames, n=>/mapping/i.test(n));
     const wb = XLSX.read(buf,{type:'array',sheets:[n5,n1,nm13].filter(Boolean),cellFormula:false,cellHTML:false,cellText:false});
-    let code=null, hname='';
+    let code=null, hname='', codeAt='';
     if(n1){
-      const ws1=wb.Sheets[n1]; const g=ws1['G2'];
-      if(g && g.v!=null && String(g.v).trim()!=='') code = String(g.v).trim().replace(/\.0+$/,'').padStart(5,'0');
+      const ws1=wb.Sheets[n1];
+      const r=findHospCode(ws1); code=r.code; codeAt=r.at;
       const e=ws1['E2']; if(e&&e.v) hname=String(e.v);
     }
     if(nm13){ const wm=wb.Sheets[nm13], mr=XLSX.utils.decode_range(wm['!ref']||'A1'), g=(r,c)=>{const x=wm[XLSX.utils.encode_cell({r,c})];return x?x.v:null;}; const nm={};
@@ -805,8 +820,8 @@ async function readFile(f){
       plan[k]=(plan[k]||0)+v; names[k]=cv(r,1);
     }
     if(!Object.keys(plan).length) throw new Error('แถบ 5.งบทดลอง รพ. ไม่มีบรรทัดรหัสบัญชีหมวด 4 หรือ 5');
-    Object.assign(st,{plan, planNames:names, planHosp:code, planName:hname, planFile:f.name, isSample:false,
-      warn: (!n1?'ไม่พบแถบ 1.Planfin จึงอ่านรหัสหน่วยบริการไม่ได้ · ':'') + (code?'':'ช่อง G2 ว่าง · ') + (bad?`มี ${bad} ช่องในคอลัมน์ C ที่ไม่ใช่ตัวเลข (นับเป็น 0)`:'')});
+    Object.assign(st,{plan, planNames:names, planHosp:code, planCodeAt:codeAt, planName:hname, planFile:f.name, isSample:false,
+      warn: (!n1?'ไม่พบแถบ 1.Planfin จึงอ่านรหัสหน่วยบริการไม่ได้ · ':'') + (code?(codeAt!=='G2'?`ช่อง G2 ไม่มีรหัส ใช้รหัส ${code} ที่พบใน${codeAt} · `:''):'ไม่พบรหัสหน่วยบริการ 5 หลักในช่อง G2 หรือช่องข้างเคียง เลือกโรงพยาบาลเองจากรายการด้านขวา · ') + (bad?`มี ${bad} ช่องในคอลัมน์ C ที่ไม่ใช่ตัวเลข (นับเป็น 0)`:'')});
     if(code && TB.hosp[code]) st.hosp = code;
     renderHead(); render();
   }catch(err){
