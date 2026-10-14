@@ -218,6 +218,9 @@ tr.estrow td.amt.plan{font-style:italic}
 .pdfbox .tablebox{max-height:none!important;overflow:visible!important}
 .pdfbox .tablebox thead{position:static}
 .pdfbox td.nm,.pdfbox th.stk{position:static}
+.etab tr.kid td.nm{padding-left:30px}
+.etab tr.egrow td.nm{cursor:pointer}
+.etab tr.sec td,.etab tr.egrow td{font-weight:600}
 .etab td.rn{color:var(--faint);font-size:12px;width:1%}
 .etab td.inp{width:170px;padding:4px 6px;background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
 .etab td.inp input{font:inherit;font-family:var(--f-num);font-size:13px;width:100%;text-align:right;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
@@ -374,7 +377,8 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
       <div class="balsum"><button class="btn exp" type="button" id="editexport" disabled>⬇ ส่งออกไฟล์แผนที่แก้ไขแล้ว (.xlsx)</button><button class="btn" type="button" id="editreset">คืนค่าเดิมทั้งหมด</button><span class="hospmeta" id="editnote"></span></div>
     </div>
     <div class="bar" role="toolbar" aria-label="ตัวกรองบรรทัด">
-      <div class="seg" id="eseg"><button type="button" data-v="all" aria-pressed="true">ทั้งหมด</button><button type="button" data-v="4" aria-pressed="false">รายได้ (4)</button><button type="button" data-v="5" aria-pressed="false">ค่าใช้จ่าย (5)</button></div>
+      <div class="seg" id="eseg"><button type="button" data-v="all" aria-pressed="true">ทั้งหมด</button><button type="button" data-v="G" aria-pressed="false">หัวข้อรวม</button><button type="button" data-v="4" aria-pressed="false">รายได้ (4)</button><button type="button" data-v="5" aria-pressed="false">ค่าใช้จ่าย (5)</button><button type="button" data-v="file" aria-pressed="false">ตามลำดับในไฟล์</button></div>
+      <button class="btn" type="button" id="eexpand">ขยายหัวข้อรวมทั้งหมด</button>
       <label class="fld grow" for="eq">ค้นหารหัส / ชื่อบัญชี<input type="search" id="eq" placeholder="เช่น 4301020105 หรือ ค่าตอบแทน"></label>
       <label class="chk" for="eonly"><input type="checkbox" id="eonly"> เฉพาะบรรทัดที่แก้</label>
       <label class="chk" for="eneed"><input type="checkbox" id="eneed"> เฉพาะบรรทัดที่เปลี่ยนเกินเกณฑ์</label>
@@ -455,7 +459,7 @@ const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 const short = n => String(n||'').replace('โรงพยาบาล','รพ.');
 
 const st = {plan:null, planHosp:null, planName:'', planFile:'', planNames:{}, isSample:false, hosp:null, warn:'',
-  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eonly:false, ezero:true, etype:'all', ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
+  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eopen:new Set(), eonly:false, ezero:true, etype:'all', ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
   pby:'level', popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
 let PEER = {list:[], v:{}, tot:{}};
 
@@ -960,10 +964,10 @@ function renderEditSummary(){
   $('#editexport').disabled = false;
   const nt=$('#editnote'); nt.className = st.buf ? 'hospmeta' : 'alert'; nt.textContent = st.buf ? `จะส่งออกจากไฟล์ ${st.planFile}` : (st.isSample ? 'ตอนนี้เป็นข้อมูลตัวอย่างที่ฝังในหน้าเว็บ ไม่มีไฟล์ Excel ต้นฉบับให้เขียนกลับ · อัปโหลดไฟล์แผน .xlsx (ใช้ไฟล์ตัวอย่างเดิมก็ได้) แล้วกดส่งออกได้ทันที' : 'ไฟล์ที่อัปโหลดไม่ใช่ .xlsx จึงเขียนกลับไม่ได้ · บันทึกเป็น .xlsx ใน Excel แล้วอัปโหลดใหม่');
 }
-function editRowHTML(x){
+function editRowHTML(x, extra=''){
   const ed = x.r in st.edits, v = ed ? st.edits[x.r] : x.orig, hy=y=>TB.y[y][st.hosp] ? hist(y,x.code) : null;
   const inVal = n => n.toLocaleString('en-US',{maximumFractionDigits:2});
-  return `<tr data-r="${x.r}" class="${ed?'edited':''}"><td class="num rn">${x.r}</td><td class="nm l"><div class="n">${esc(x.name||TB.acc[x.code]||'')}</div><div class="cd">${x.code}${x.f?` · <span title="สูตรเดิมในไฟล์">สูตร ${esc(x.f)}</span>`:''}</div></td>
+  return `<tr data-r="${x.r}" class="${ed?'edited':''} ${extra}"><td class="num rn">${x.r}</td><td class="nm l"><div class="n">${esc(x.name||TB.acc[x.code]||'')}</div><div class="cd">${x.code}${x.f?` · <span title="สูตรเดิมในไฟล์">สูตร ${esc(x.f)}</span>`:''}</div></td>
     <td class="amt">${fmt2.format(x.orig)}</td>
     <td class="inp"><input type="text" inputmode="decimal" aria-label="จำนวนเงินใหม่ แถว ${x.r}" value="${inVal(v)}"></td>
     <td class="amt diff">${ed?((v-x.orig>0?'+':'')+fmt2.format(v-x.orig)):''}</td>
@@ -974,24 +978,90 @@ function editRowHTML(x){
 function renderEdit(){
   renderEditSummary();
   if(!st.rows5){ $('#etb').innerHTML=''; return; }
-  const q=st.eq.toLowerCase();
-  const rows=st.rows5.filter(x=>{
+  const q=st.eq.toLowerCase(), filt = !!(q || st.eonly || st.eneed);
+  const pass = x => {
     if(st.eonly && !(x.r in st.edits)) return false;
     if(st.eneed && !needsReason(x)) return false;
     if(st.ezero && !x.orig && !(x.r in st.edits) && !YEARS.some(y=>TB.y[y][st.hosp]&&hist(y,x.code))) return false;
-    if(st.etype!=='all' && x.code[0]!==st.etype) return false;
     if(q && !x.code.includes(q) && !String(x.name||'').toLowerCase().includes(q)) return false;
-    return true; });
-  $('#ecount').textContent = `แสดง ${rows.length} จาก ${st.rows5.length} บรรทัด`;
-  $('#etb').innerHTML = rows.length ? rows.map(editRowHTML).join('') : `<tr><td colspan="13" class="empty">ไม่มีบรรทัดที่ตรงกับตัวกรอง</td></tr>`;
+    return true; };
+  const empty = `<tr><td colspan="13" class="empty">ไม่มีบรรทัดที่ตรงกับตัวกรอง</td></tr>`;
+  const mode=st.etype; let html='', shown=0;
+  if(mode==='file' || mode==='4' || mode==='5'){
+    const rows=st.rows5.filter(x=>(mode==='file'||x.code[0]===mode) && pass(x)); shown=rows.length;
+    if(mode!=='file') html += editSecHTML(mode);
+    html += rows.length ? rows.map(x=>editRowHTML(x)).join('') : empty;
+  } else {
+    const grouped=GROUPED();
+    const byCode = c => st.rows5.filter(x=>x.code===c);
+    ['4','5'].forEach(pre=>{
+      const gs=GROUPS.filter(g=>gsec(g)===pre);
+      let gh='';
+      gs.forEach(g=>{
+        const kids=g.codes.flatMap(byCode), vis=kids.filter(pass);
+        const nameHit = q && g.name.toLowerCase().includes(q);
+        if(filt && !vis.length && !nameHit) return;
+        const open = st.eopen.has(g.id) || (filt && vis.length);
+        gh += editGroupHTML(g, open) + (g.id==='ucip' ? editEstHTML() : '');
+        if(open) gh += (filt && !nameHit ? vis : kids).map(x=>editRowHTML(x,'kid')).join('');
+        shown += vis.length;
+      });
+      if(gh) html += `<tr class="gsec"><td class="l nm" colspan="2">หัวข้อรวม · ${pre==='4'?'รายได้ (หมวด 4)':'ค่าใช้จ่าย (หมวด 5)'}</td><td colspan="11"></td></tr>` + gh;
+    });
+    if(mode==='all') ['4','5'].forEach(pre=>{
+      const rows=st.rows5.filter(x=>x.code[0]===pre && !grouped.has(x.code) && pass(x)); shown+=rows.length;
+      html += editSecHTML(pre, true) + (rows.length ? rows.map(x=>editRowHTML(x)).join('') : empty);
+    });
+  }
+  $('#ecount').textContent = `แสดง ${shown} จาก ${st.rows5.length} บรรทัด`;
+  $('#etb').innerHTML = html || empty;
 }
+function sumRowsVals(rows, sign=()=>1){
+  const o={orig:0, cur:0, h:{}};
+  rows.forEach(x=>{ const s=sign(x.code); o.orig+=s*x.orig; o.cur+=s*curVal(x); });
+  return o;
+}
+function editAggCells(o, codes, sign=()=>1){
+  const hv = y => TB.y[y][st.hosp] ? codes.reduce((a,c)=>a+sign(c)*hist(y,c),0) : null;
+  return `<td class="amt">${fmt2.format(o.orig)}</td><td class="amt plan">${fmt2.format(o.cur)}</td><td class="amt diff">${Math.abs(o.cur-o.orig)>=0.005?((o.cur-o.orig>0?'+':'')+fmt2.format(o.cur-o.orig)):''}</td>`
+    + YEARS.map(y=>{ const h=hv(y); return `<td class="amt hist">${h==null?'–':fmt.format(h)}</td><td class="pc">${pillHTML(pct(o.cur,h))}</td>`; }).join('') + '<td></td><td></td>';
+}
+function editGroupHTML(g, open){
+  const kids=g.codes.flatMap(c=>st.rows5.filter(x=>x.code===c)), sg=c=>sgn(g,c);
+  const o=sumRowsVals(kids, sg), ed=kids.some(x=>x.r in st.edits);
+  return `<tr class="grow egrow${open?' open':''}${ed?' edited':''}" data-eg="${g.id}"><td></td><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.codes.length} บัญชีย่อย${g.neg?' · มีรายการหัก':''}</div></td>${editAggCells(o, g.codes, sg)}</tr>`;
+}
+function editSecHTML(pre, excl){
+  const rows=st.rows5.filter(x=>x.code[0]===pre), o=sumRowsVals(rows), codes=[...new Set(rows.map(x=>x.code))];
+  return `<tr class="sec" data-esec="${pre}${excl?'x':''}"><td></td><td class="l nm">${pre==='4'?'รายได้ (หมวด 4) รวมทั้งหมวด':'ค่าใช้จ่าย (หมวด 5) รวมทั้งหมวด'}${excl?'<div class="cd" style="font-family:var(--f-body)">บัญชีในหัวข้อรวมแสดงไว้ด้านบน</div>':''}</td>${editAggCells(o, codes)}</tr>`;
+}
+function refreshEditAggregates(code){
+  if(GROUPS.find(g=>g.id==='ucip').codes.includes(code)){ const er=document.querySelector('#etb tr[data-eest]'); if(er) er.outerHTML=editEstHTML(); }
+  GROUPS.filter(g=>g.codes.includes(code)).forEach(g=>{ const tr=document.querySelector(`#etb tr[data-eg="${g.id}"]`); if(tr) tr.outerHTML=editGroupHTML(g, tr.classList.contains('open')); });
+  document.querySelectorAll(`#etb tr[data-esec^="${code[0]}"]`).forEach(tr=>{ tr.outerHTML=editSecHTML(code[0], tr.dataset.esec.endsWith('x')); });
+}
+function editEstHTML(){
+  if(!SHOW_UCIP_EST) return '';
+  const e=ucipEst(st.hosp); if(e==null) return '';
+  const g=GROUPS.find(x=>x.id==='ucip'), kids=g.codes.flatMap(c=>st.rows5.filter(x=>x.code===c)), cur=sumRowsVals(kids).cur;
+  const hv=y=>TB.y[y][st.hosp] ? g.codes.reduce((a,c)=>a+hist(y,c),0) : null, c=pct(cur,e);
+  return `<tr class="estrow" data-eest="1"><td></td><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่</div><div class="cd">อัตราในเขต ${fmt.format(st.ucRate)} บาท/AdjRW · ค่าใหม่ของหัวข้อ${c.k==='up'?'สูงกว่า':c.k==='down'?'ต่ำกว่า':'เท่ากับ'}ประมาณการ ${pillHTML(c)}</div></td>
+    <td></td><td class="amt plan" title="ค่าประมาณการ">${fmt2.format(e)}</td><td class="amt diff" title="ค่าใหม่ของหัวข้อ − ประมาณการ">${(cur-e>0?'+':'')+fmt2.format(cur-e)}</td>
+    ${YEARS.map(y=>{const h=hv(y);return `<td></td><td class="pc" title="ประมาณการเทียบงบทดลอง ${y}">${pillHTML(pct(e,h))}</td>`}).join('')}<td></td><td></td></tr>`;
+}
+function toggleEditGroup(id){ st.eopen.has(id)?st.eopen.delete(id):st.eopen.add(id); renderEdit(); const n=document.querySelector(`#etb tr[data-eg="${id}"] td.nm`); if(n) n.focus(); }
 function applyEdit(r, raw){
   const x=st.rows5.find(z=>z.r===r); if(!x) return;
   const v = String(raw).trim()==='' ? null : parseNum(raw);
   if(v===undefined || (String(raw).trim()!=='' && v===null)){ setExpMsg('ใส่ได้เฉพาะตัวเลข',true); return; }
   if(v===null || Math.abs(v-x.orig)<0.005) delete st.edits[r]; else st.edits[r]=v;
   rebuildPlanFromRows(); render();
-  const tr=document.querySelector(`#etb tr[data-r="${r}"]`); if(tr){ tr.outerHTML=editRowHTML(x); }
+  const tr=document.querySelector(`#etb tr[data-r="${r}"]`); if(tr){ tr.outerHTML=editRowHTML(x, tr.classList.contains('kid')?'kid':''); }
+  refreshEditAggregates(x.code);
+  // the row was re-rendered: if keyboard focus was heading into it (Tab to the reason box), put it back
+  setTimeout(()=>{ if(document.activeElement && document.activeElement!==document.body) return;
+    const row=document.querySelector(`#etb tr[data-r="${r}"]`); if(!row) return;
+    const tgt=row.querySelector('td.rsn textarea') || row.nextElementSibling?.querySelector('td.inp input'); if(tgt) tgt.focus(); },0);
   renderEditSummary();
 }
 async function exportEdited(){
@@ -1185,6 +1255,9 @@ $('#etb').addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.matches
 $('#etb').addEventListener('click',e=>{ if(e.target.matches('.undo')){ const r=+e.target.closest('tr').dataset.r; delete st.edits[r]; rebuildPlanFromRows(); render(); renderEdit(); } });
 $('#editreset').addEventListener('click',()=>{ if(!editCount()) return; st.edits={}; rebuildPlanFromRows(); render(); renderEdit(); setExpMsg('คืนค่าเดิมทั้งหมดแล้ว'); });
 $('#editexport').addEventListener('click',exportEdited);
+$('#etb').addEventListener('click',e=>{ const tr=e.target.closest('tr[data-eg]'); if(tr && e.target.closest('td.nm')) toggleEditGroup(tr.dataset.eg); });
+$('#etb').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('tr[data-eg] td.nm')){ e.preventDefault(); toggleEditGroup(e.target.parentElement.dataset.eg); } });
+$('#eexpand').addEventListener('click',()=>{ const all=GROUPS.every(g=>st.eopen.has(g.id)); st.eopen = all? new Set() : new Set(GROUPS.map(g=>g.id)); $('#eexpand').textContent = all?'ขยายหัวข้อรวมทั้งหมด':'ยุบหัวข้อรวมทั้งหมด'; renderEdit(); });
 $('#etb').addEventListener('input',e=>{ if(e.target.matches('td.rsn textarea')){ const r=+e.target.closest('tr').dataset.r; const v=e.target.value; if(v.trim()) st.reasons[r]=v; else delete st.reasons[r]; clearTimeout(window.__rst); window.__rst=setTimeout(renderEditSummary,300); } });
 $('#eneed').addEventListener('change',e=>{ st.eneed=e.target.checked; renderEdit(); });
 let rtt; $('#rthr').addEventListener('input',e=>{ clearTimeout(rtt); rtt=setTimeout(()=>{ const v=parseFloat(e.target.value); if(isFinite(v)&&v>=0){ st.rthr=v; $('#rthrlbl').textContent=v; renderEdit(); } },250); });
