@@ -485,6 +485,8 @@ const RULES = [
   {g:'ssop', up:20, down:20},
   {g:'stpop', up:15, down:15},
   {g:'lab', up:15, down:15},
+  {g:'ucopout', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4313010199.105', up:20, down:20, nozero:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
 ];
 let ALERTS = {};   // key: account code or 'G:'+group id -> {msg, why}
 function ruleValue(rule, getter){ if(rule.code) return getter(rule.code); const g=GROUPS.find(x=>x.id===rule.g); return g ? g.codes.reduce((a,c)=>a+sgn(g,c)*getter(c),0) : 0; }
@@ -495,7 +497,10 @@ function computeAlerts(){
     const key = rule.code || ('G:'+rule.g);
     const name = rule.code ? (TB.acc[rule.code]||st.planNames[rule.code]||rule.code) : (GROUPS.find(x=>x.id===rule.g)||{}).name;
     const plan = ruleValue(rule, c=>st.plan[c]||0);
+    const msg = rule.msg || 'ข้อมูลผิดปกติ โปรดทบทวน';
     if(rule.zero){ if(Math.abs(plan)>=0.005) ALERTS[key]={name, msg:'ให้แก้เลขช่องนี้เป็น 0', why:`แผน ${fmt.format(plan)} บาท`}; return; }
+    if(rule.nonneg){ if(plan < -0.005) ALERTS[key]={name, msg, why:`ยอดรวม ${fmt.format(plan)} บาท · ต้องมากกว่าหรือเท่ากับ 0`}; return; }
+    if(rule.nozero && Math.abs(plan)<0.005){ ALERTS[key]={name, msg, why:'แผนเป็น 0'}; return; }
     if(!has69) return;
     const base = ruleValue(rule, c=>hist('2569',c)), c=pct(plan, base);
     const lim = (rule.down!=null ? `เกณฑ์ +${rule.up}% / −${rule.down}%` : (rule.up ? `เกณฑ์ไม่เกิน +${rule.up}%` : 'เกณฑ์ไม่เกินปี 2569'));
@@ -503,7 +508,7 @@ function computeAlerts(){
     if(c.k==='new') bad = plan>0;
     else if(c.k==='up') bad = c.p > rule.up;
     else if(c.k==='down') bad = rule.down!=null && -c.p > rule.down;
-    if(bad) ALERTS[key]={name, msg:'ข้อมูลผิดปกติ โปรดทบทวน', why:`${c.k==='new'?'ปี 2569 เป็น 0':(c.p>0?'+':'')+c.p.toFixed(1)+'% จากปี 2569'} · ${lim}`};
+    if(bad) ALERTS[key]={name, msg, why:`${c.k==='new'?'ปี 2569 เป็น 0':(c.p>0?'+':'')+c.p.toFixed(1)+'% จากปี 2569'} · ${lim}`};
   });
 }
 const alertBadge = key => { const a=ALERTS[key]; return a ? `<div class="alertmsg">⚠ ${esc(a.msg)} <span>(${esc(a.why)})</span></div>` : ''; };
