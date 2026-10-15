@@ -264,6 +264,23 @@ tr.relrow td.nm{padding-left:30px;box-shadow:inset 3px 0 0 var(--peer)}
 .relpre{font-size:11.5px;font-weight:600;color:var(--peer)}
 tr.gbrk td{border-top:3px solid var(--line)}
 tr.single td.nm .n{font-weight:600;font-size:16px}
+.tbpdf{position:absolute;left:-10000px;top:0;width:900px;padding:20px 24px;background:#fff;color:#111;font-family:var(--f-body);font-size:12px;color-scheme:light}
+.tbpdf h1{font-family:var(--f-display);font-size:18px;margin:0 0 4px}
+.tbpdf .meta{color:#555;font-size:11px;margin:4px 0 10px}
+.tbpdf table{border-collapse:collapse;width:100%;min-width:0;table-layout:auto}
+.tbpdf tbody td{text-align:left;font-size:12px}
+.tbpdf td:nth-child(3){width:36%}
+.tbpdf td.rs{min-width:150px}
+.tbpdf th{background:#eef2f3;color:#333;font-size:11px;text-align:left;padding:5px 6px;border-bottom:1px solid #999}
+.tbpdf td{padding:4px 6px;border-bottom:1px solid #ddd;vertical-align:top}
+.tbpdf td.n{text-align:right;font-family:var(--f-num);white-space:nowrap}
+.tbpdf td.b{font-weight:600}
+.tbpdf td.d{color:#8a5a00;font-weight:600}
+.tbpdf td.c{color:#888;text-align:right}
+.tbpdf td.mono{font-family:var(--f-num);font-size:11px;white-space:nowrap}
+.tbpdf td.rs{font-size:11px;color:#333}
+.tbpdf tr.ed td{background:#fff4cc}
+.tbpdf tr.tot td{background:#e9f0fb;font-weight:700;border-bottom:1px solid #666}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 .credit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:2px;font-size:13px;color:var(--muted)}
@@ -407,7 +424,7 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
       <div class="hospmeta">แก้จำนวนเงินในแถบ “5.งบทดลอง รพ.” คอลัมน์ C ทีละบรรทัด ตัวเลขใหม่ใช้ในการวิเคราะห์ทุกแถบทันที · ปุ่มส่งออกกดได้ทันทีแม้ยังไม่แก้ จะเขียนตัวเลขของทุกบรรทัดตามหน้าเว็บลงคอลัมน์ C ของไฟล์ที่อัปโหลด แถบอื่น สูตร และรูปแบบในไฟล์คงเดิม และ Excel จะคำนวณสูตรใหม่ทั้งไฟล์เมื่อเปิด · ช่องในคอลัมน์ C ที่เดิมเป็นสูตร จะกลายเป็นตัวเลขผลลัพธ์ · ในไฟล์ที่ส่งออก ช่องที่แก้ตัวเลข (คอลัมน์ C) และช่องเหตุผล (คอลัมน์ D) จะมีพื้นสีเหลืองจาง</div>
       <div class="balsum" id="editsum"></div>
       <div class="alerts-slot" aria-live="polite"></div>
-      <div class="balsum"><button class="btn exp" type="button" id="editexport" disabled>⬇ ส่งออกไฟล์แผนที่แก้ไขแล้ว (.xlsx)</button><button class="btn" type="button" id="editreset">คืนค่าเดิมทั้งหมด</button><span class="hospmeta" id="editnote"></span></div>
+      <div class="balsum"><button class="btn exp" type="button" id="editexport" disabled>⬇ ส่งออกไฟล์แผนที่แก้ไขแล้ว (.xlsx)</button><button class="btn exp" type="button" id="edittbpdf">⬇ PDF งบทดลอง (เดิม / ใหม่)</button><button class="btn" type="button" id="editreset">คืนค่าเดิมทั้งหมด</button><span class="hospmeta" id="editnote"></span></div>
     </div>
     <div class="bar" role="toolbar" aria-label="ตัวกรองบรรทัด">
       <div class="seg" id="eseg"><button type="button" data-v="all" aria-pressed="true">ทั้งหมด</button><button type="button" data-v="G" aria-pressed="false">หัวข้อรวม</button><button type="button" data-v="4" aria-pressed="false">รายได้ (4)</button><button type="button" data-v="5" aria-pressed="false">ค่าใช้จ่าย (5)</button><button type="button" data-v="file" aria-pressed="false">ตามลำดับในไฟล์</button></div>
@@ -958,6 +975,56 @@ function exportExcel(){
   const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   saveFile(baseName()+'.xlsx', new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
 }
+// Renders an off-screen element to a multi-page A4 PDF, cutting pages only between table rows
+async function elementToPdf(box, filename, orientation='portrait'){
+  document.body.append(box);
+  try{
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const H=box.scrollHeight, scale=Math.max(1, Math.min(2, 30000/H));
+    const top=box.getBoundingClientRect().top;
+    const cuts=[...box.querySelectorAll('tr')].map(tr=>Math.round((tr.getBoundingClientRect().bottom-top)*scale));
+    const bg='#ffffff';
+    const canvas=await html2canvas(box,{scale, backgroundColor:bg, logging:false, useCORS:false});
+    const pdf=new window.jspdf.jsPDF({orientation,unit:'mm',format:'a4'});
+    const pw=orientation==='portrait'?210:297, ph=orientation==='portrait'?297:210, m=8, iw=pw-2*m, ih=ph-2*m-4, pxPerMm=canvas.width/iw, slice=Math.floor(ih*pxPerMm);
+    let y=0, i=0;
+    while(y<canvas.height-1){
+      let end=Math.min(y+slice, canvas.height);
+      if(end<canvas.height){ const ok=cuts.filter(c=>c>y+slice*0.5 && c<=end); if(ok.length) end=ok[ok.length-1]; }
+      const h=end-y, c=document.createElement('canvas'); c.width=canvas.width; c.height=h;
+      const cx=c.getContext('2d'); cx.fillStyle=bg; cx.fillRect(0,0,c.width,h); cx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
+      if(i) pdf.addPage();
+      pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',m,m,iw,h/pxPerMm);
+      pdf.setFontSize(8); pdf.setTextColor(140); pdf.text(`${i+1}`, pw-m, ph-4, {align:'right'});
+      y=end; i++;
+    }
+    await saveFile(filename, pdf.output('blob'));
+  } finally { box.remove(); }
+}
+// PDF of sheet "5.งบทดลอง รพ." only: original amount from the file vs the amount after editing
+async function exportTbPdf(){
+  if(typeof html2canvas==='undefined' || !window.jspdf){ setExpMsg('โหลดตัวสร้าง PDF ไม่สำเร็จ',true); return; }
+  if(!st.rows5){ setExpMsg('ยังไม่มีไฟล์แผน',true); return; }
+  const btn=$('#edittbpdf'); btn.disabled=true; setExpMsg('กำลังสร้าง PDF …');
+  const h=TB.hosp[st.hosp]||['',''], n=editCount();
+  const sum=(pre,useNew)=>st.rows5.filter(x=>x.code[0]===pre).reduce((a,x)=>a+(useNew?curVal(x):x.orig),0);
+  const r0=sum('4',0), r1=sum('4',1), e0=sum('5',0), e1=sum('5',1);
+  const f2=v=>fmt2.format(v), dif=(a,b)=>Math.abs(b-a)<0.005?'':((b-a>0?'+':'')+fmt2.format(b-a));
+  const rows=st.rows5.filter(x=>x.orig || curVal(x) || x.r in st.edits);
+  const tr=x=>{ const ed=x.r in st.edits, v=curVal(x), rs=(st.reasons[x.r]||'').trim();
+    return `<tr class="${ed?'ed':''}"><td class="c">${x.r}</td><td class="mono">${x.code}</td><td>${esc(x.name||TB.acc[x.code]||'')}</td><td class="n">${f2(x.orig)}</td><td class="n b">${f2(v)}</td><td class="n d">${ed?dif(x.orig,v):''}</td><td class="rs">${esc(rs)}</td></tr>`; };
+  const tot=(lbl,a,b)=>`<tr class="tot"><td></td><td></td><td>${lbl}</td><td class="n">${f2(a)}</td><td class="n b">${f2(b)}</td><td class="n d">${dif(a,b)}</td><td></td></tr>`;
+  const box=document.createElement('div'); box.className='tbpdf';
+  box.innerHTML = `<h1>แถบ 5.งบทดลอง รพ. — ตัวเลขเดิมจากไฟล์ และตัวเลขที่แก้ไขแล้ว</h1>
+    <div class="meta">${esc(h[0])} (${esc(st.hosp)}) จังหวัด${esc(h[1])} · ไฟล์: ${esc(st.planFile)}${st.isSample?' (ตัวอย่าง)':''} · แก้ไข ${n} บรรทัด · พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</div>
+    <table><thead><tr><th>แถว</th><th>รหัสบัญชี</th><th>ชื่อบัญชี</th><th>ค่าเดิมในไฟล์</th><th>ค่าใหม่</th><th>ส่วนต่าง</th><th>เหตุผล</th></tr></thead>
+    <tbody>${tot('รวมรายได้ (หมวด 4)',r0,r1)}${tot('รวมค่าใช้จ่าย (หมวด 5)',e0,e1)}${tot('รายได้สูง(ต่ำ)กว่าค่าใช้จ่าย',r0-e0,r1-e1)}${rows.map(tr).join('')}</tbody></table>
+    <div class="meta">แสดงเฉพาะบรรทัดที่มียอดหรือมีการแก้ไข (${rows.length} จาก ${st.rows5.length} บรรทัด) · พื้นสีเหลือง = บรรทัดที่แก้ไข</div>`;
+  try{ await elementToPdf(box, `งบทดลองแก้ไข_${st.hosp}_${stamp()}.pdf`, 'portrait'); }
+  catch(e){ setExpMsg('สร้าง PDF ไม่สำเร็จ: '+(e&&e.message||e),true); }
+  finally{ btn.disabled=false; }
+}
+
 async function exportPDF(){
   if(typeof html2canvas==='undefined' || !window.jspdf){ setExpMsg('โหลดตัวสร้าง PDF ไม่สำเร็จ',true); return; }
   const view=['view-cmp','view-plan','view-bal','view-edit'].map(id=>document.getElementById(id)).find(v=>!v.hidden);
@@ -1379,6 +1446,7 @@ $('#etb').addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.matches
 $('#etb').addEventListener('click',e=>{ if(e.target.matches('.undo')){ const r=+e.target.closest('tr').dataset.r; delete st.edits[r]; rebuildPlanFromRows(); render(); renderEdit(); } });
 $('#editreset').addEventListener('click',()=>{ if(!editCount()) return; st.edits={}; rebuildPlanFromRows(); render(); renderEdit(); setExpMsg('คืนค่าเดิมทั้งหมดแล้ว'); });
 $('#editexport').addEventListener('click',exportEdited);
+$('#edittbpdf').addEventListener('click',exportTbPdf);
 $('#etb').addEventListener('click',e=>{ const tr=e.target.closest('tr[data-eg]'); if(tr && e.target.closest('td.nm')) toggleEditGroup(tr.dataset.eg); });
 $('#etb').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('tr[data-eg] td.nm')){ e.preventDefault(); toggleEditGroup(e.target.parentElement.dataset.eg); } });
 $('#eexpand').addEventListener('click',()=>{ const all=GROUPS.every(g=>st.eopen.has(g.id)); st.eopen = all? new Set() : new Set(GROUPS.map(g=>g.id)); $('#eexpand').textContent = all?'ขยายหัวข้อรวมทั้งหมด':'ยุบหัวข้อรวมทั้งหมด'; renderEdit(); });
