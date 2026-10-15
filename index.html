@@ -219,6 +219,7 @@ tr.estrow td.amt.plan{font-style:italic}
 .pdfbox .tablebox thead{position:static}
 .pdfbox td.nm,.pdfbox th.stk{position:static}
 .etab tr.kid td.nm{padding-left:30px}
+.etab tr.kid2 td.nm,tr.kid2 td.nm{padding-left:54px}
 .etab tr.egrow td.nm{cursor:pointer}
 .etab tr.sec td,.etab tr.egrow td{font-weight:600}
 .etab td.rn{color:var(--faint);font-size:12px;width:1%}
@@ -255,6 +256,14 @@ tr.warnrow td.nm{box-shadow:inset 4px 0 0 var(--down-strong)}
 .alertbox ul{margin:6px 0 0;padding-left:20px;display:grid;gap:2px}
 .alertbox li span{color:var(--muted)}
 .alertbox.ok{border-color:var(--up-strong);background:color-mix(in srgb,var(--up-bg) 60%,var(--surface));color:var(--up);font-weight:600}
+.reltg{display:inline-block;margin-top:4px;font:inherit;font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--peer);background:var(--peer-soft);border:1px solid color-mix(in srgb,var(--peer) 40%,transparent);border-radius:999px;padding:1px 10px;cursor:pointer}
+.reltg:hover{border-color:var(--peer)}
+.reltg:focus-visible{outline:2px solid var(--peer);outline-offset:1px}
+tr.relrow td{background:color-mix(in srgb,var(--peer-soft) 70%,var(--surface))!important;font-size:12.5px}
+tr.relrow td.nm{padding-left:30px;box-shadow:inset 3px 0 0 var(--peer)}
+.relpre{font-size:11.5px;font-weight:600;color:var(--peer)}
+tr.gbrk td{border-top:3px solid var(--line)}
+tr.single td.nm .n{font-weight:600;font-size:16px}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 .credit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:2px;font-size:13px;color:var(--muted)}
@@ -448,18 +457,22 @@ const SVC = {"10674":["A","รพศ.A B>700to1000",793,149576,"รพศ."],"11
 const YEARS = ['2569','2568','2567'];
 const GROUPED = () => new Set(GROUPS.flatMap(g=>g.codes)); // grouped accounts are hidden from the หมวด lists in the ทั้งหมด view
 const GROUPS = [
-  {id:'ucip', name:'รายได้ UC IP (รวม)', codes:['4301020105.202','4301020105.265','4301020105.231','4301020105.232']},
-  {id:'cgdip', name:'รายได้เบิกได้กรมบัญชีกลาง IP (รวม)', codes:['4301020104.402','4301020104.405','4301020104.406']},
-  {id:'lgoip', name:'รายได้เบิกได้ อปท. IP (รวม)', codes:['4301020104.802','4301020104.803','4301020104.804']},
-  {id:'lgosip', name:'รายได้เบิกได้ อปท.รูปแบบพิเศษ IP (รวม)', codes:['4301020104.806','4301020104.807','4301020104.808']},
-  {id:'ssop', name:'รายได้ประกันสังคม OP (รวม)', codes:['4301020106.305','4301020106.315']},
   {id:'ucop', name:'รายได้ UC OP เหมาจ่าย (รวม)', codes:['4301020105.201','4301020105.214','4301020105.229','4301020105.264']},
-  {id:'ucopout', name:'UC OP นอก CUP ในจังหวัด (รวม)', codes:['4301020105.203','4301020105.239']},
   {id:'ucpp', name:'รายได้ UC PP เหมาจ่าย (รวม)', codes:['4301020105.241','4301020105.217','4301020105.266','4301020105.257']},
-  {id:'ssip', name:'รายได้ประกันสังคม IP (รวม)', codes:['4301020106.306','4301020106.317']},
+  {id:'ucip', name:'รายได้ UC IP (รวม)', codes:['4301020105.202','4301020105.265','4301020105.231','4301020105.232']},
+  {id:'crop', nested:true, name:'UC OP กรณีเฉพาะ CR (รวม)', codes:['4301020105.244','4301020105.258','4301020105.260']},
+  {id:'crop222', name:'UC OP กรณีเฉพาะ CR (รวม) + รายได้กองทุน UC เฉพาะโรคอื่น', codes:['4301020105.244','4301020105.258','4301020105.260','4301020105.222'], parts:[{g:'crop'},{code:'4301020105.222'}]},
   {id:'crip', name:'UC IP กรณีเฉพาะ CR (รวม)', codes:['4301020105.245','4301020105.251','4301020105.252']},
-  {id:'crop', name:'UC OP กรณีเฉพาะ CR (รวม)', codes:['4301020105.244','4301020105.258','4301020105.260']},
-  {id:'stpop', name:'STP OP (รวม)', codes:['4301020106.709','4301020106.711','4301020106.712','4301020106.704']},
+  {id:'ucopout', name:'UC OP นอก CUP ในจังหวัด (รวม)', codes:['4301020105.203','4301020105.239']},
+  {brk:true, id:'s401', single:true, name:'รายได้ค่ารักษาเบิกจ่ายตรงกรมบัญชีกลาง OP', codes:['4301020104.401']},
+  {id:'cgdip', name:'รายได้เบิกได้กรมบัญชีกลาง IP (รวม)', codes:['4301020104.402','4301020104.405','4301020104.406']},
+  {brk:true, id:'s801', single:true, name:'รายได้ค่ารักษาเบิกจ่ายตรง - อปท. OP', codes:['4301020104.801']},
+  {id:'lgoip', name:'รายได้เบิกได้ อปท. IP (รวม)', codes:['4301020104.802','4301020104.803','4301020104.804']},
+  {brk:true, id:'s805', single:true, name:'รายได้ค่ารักษาเบิกจ่ายตรง - อปท.รูปแบบพิเศษ OP', codes:['4301020104.805']},
+  {id:'lgosip', name:'รายได้เบิกได้ อปท.รูปแบบพิเศษ IP (รวม)', codes:['4301020104.806','4301020104.807','4301020104.808']},
+  {brk:true, id:'ssop', name:'รายได้ประกันสังคม OP (รวม)', codes:['4301020106.305','4301020106.315']},
+  {id:'ssip', name:'รายได้ประกันสังคม IP (รวม)', codes:['4301020106.306','4301020106.317']},
+  {brk:true, id:'stpop', name:'STP OP (รวม)', codes:['4301020106.709','4301020106.711','4301020106.712','4301020106.704']},
   {id:'stpip', name:'STP IP (รวม)', codes:['4301020106.710','4301020106.705','4301020106.706']},
   {id:'f1112', name:'ค่าตอบแทน ฉ.11/ฉ.12 (รวม)', codes:['5104040102.111','5104040102.112','5104040102.113','5104040102.114','5104040102.115','5104040102.116','5104040102.117','5104040102.118']},
   {id:'lab', sec:'5', name:'วัสดุวิทยาศาสตร์ + ค่าจ้างตรวจ Lab (รวม)', codes:['5104010112.114','5104030205.104']},
@@ -476,20 +489,28 @@ const UCIP_ITEMS = [['SumAdjRW นอกเขต',10000,0],['SumAdjRW ทาร
 function ucipEst(h){ const d=UCIP[h]; if(!d) return null; return UCIP_ITEMS.reduce((a,[n,rate,i])=>a+d[i]*(rate??st.ucRate),0); }
 // Review rules: flag figures that need a second look (vs own trial balance 2569). up/down = allowed % change; up:0 = any increase
 const RULES = [
-  {g:'ucop', up:5},
-  {g:'ucpp', up:0},
+  {g:'ucop', up:5, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
+  {g:'ucpp', up:0, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
+  {g:'ucip', est:true, up:20, down:20},
   {code:'4301020105.243', zero:true},
   {code:'5104020101.101', up:15, down:10},
   {code:'5104030205.101', up:15, down:10},
   {code:'5104010110.101', up:15, down:15},
   {code:'4301020102.105', up:20, down:20},
   {g:'ssop', up:20, down:20},
+  {g:'cgdip', up:20, down:20},
+  {g:'lgoip', up:20, down:20},
+  {g:'crip', up:20, minAmt:100000},
+  {g:'crop222', up:20, minAmt:100000},
   {g:'stpop', up:15, down:15},
-  {g:'lab', up:15, down:15},
   {g:'ucopout', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
   {code:'4313010199.105', up:20, down:20, nozero:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
 ];
-let ALERTS = {};   // key: account code or 'G:'+group id -> {msg, why}
+let ALERTS = {};
+// accounts that can be dropped down under another line for a side-by-side look (their own row stays where it is)
+const REL = {'G:crip':['5104030205.103'], 'G:crop222':['5104010112.112']};
+const relToggle = key => { const cs=REL[key]; if(!cs) return ''; const open=st.relopen.has(key);
+  return `<button type="button" class="reltg" data-rel="${key}" aria-expanded="${open}">${open?'▾':'▸'} ดูประกอบ: ${cs.map(c=>esc(TB.acc[c]||c)).join(', ')}</button>`; };   // key: account code or 'G:'+group id -> {msg, why}
 function ruleValue(rule, getter){ if(rule.code) return getter(rule.code); const g=GROUPS.find(x=>x.id===rule.g); return g ? g.codes.reduce((a,c)=>a+sgn(g,c)*getter(c),0) : 0; }
 function computeAlerts(){
   ALERTS={}; if(!st.plan) return;
@@ -502,14 +523,23 @@ function computeAlerts(){
     if(rule.zero){ if(Math.abs(plan)>=0.005) ALERTS[key]={name, msg:'ให้แก้เลขช่องนี้เป็น 0', why:`แผน ${fmt.format(plan)} บาท`}; return; }
     if(rule.nonneg){ if(plan < -0.005) ALERTS[key]={name, msg, why:`ยอดรวม ${fmt.format(plan)} บาท · ต้องมากกว่าหรือเท่ากับ 0`}; return; }
     if(rule.nozero && Math.abs(plan)<0.005){ ALERTS[key]={name, msg, why:'แผนเป็น 0'}; return; }
+    if(rule.est){ // compare the plan with the UC IP estimate (AdjRW ปี 69 × new rates)
+      if(!SHOW_UCIP_EST) return; const e=ucipEst(st.hosp); if(e==null || !e) return;
+      const d=(plan-e)/Math.abs(e)*100;
+      if(d>rule.up || -d>rule.down) ALERTS[key]={name, msg, why:`${d>0?'+':''}${d.toFixed(1)}% จากประมาณการผลงานปี 69 × อัตราใหม่ (${fmt.format(e)} บาท) · เกณฑ์ ±${rule.up}%`};
+      return; }
     if(!has69) return;
     const base = ruleValue(rule, c=>hist('2569',c)), c=pct(plan, base);
-    const lim = (rule.down!=null ? `เกณฑ์ +${rule.up}% / −${rule.down}%` : (rule.up ? `เกณฑ์ไม่เกิน +${rule.up}%` : 'เกณฑ์ไม่เกินปี 2569'));
+    const lim = (rule.down!=null ? `เกณฑ์ ${rule.up?'+'+rule.up+'%':'ไม่เกินปี 2569'} / −${rule.down}%` : (rule.up ? `เกณฑ์ไม่เกิน +${rule.up}%` : 'เกณฑ์ไม่เกินปี 2569'));
     let bad=false;
+    if(rule.minAmt!=null){ // increase only, and both % and baht thresholds
+      const inc=plan-base; bad = inc>rule.minAmt && (c.k==='new' || (c.k==='up' && c.p>rule.up));
+      if(bad) ALERTS[key]={name, msg, why:`${c.k==='new'?'ปี 2569 เป็น 0':'+'+c.p.toFixed(1)+'% จากปี 2569'} · เพิ่ม ${fmt.format(inc)} บาท · เกณฑ์เพิ่มเกิน +${rule.up}% และเกิน ${fmt.format(rule.minAmt)} บาท`};
+      return; }
     if(c.k==='new') bad = plan>0;
     else if(c.k==='up') bad = c.p > rule.up;
     else if(c.k==='down') bad = rule.down!=null && -c.p > rule.down;
-    if(bad) ALERTS[key]={name, msg, why:`${c.k==='new'?'ปี 2569 เป็น 0':(c.p>0?'+':'')+c.p.toFixed(1)+'% จากปี 2569'} · ${lim}`};
+    if(bad) ALERTS[key]={name, msg, why:`${c.k==='new'?'ปี 2569 เป็น 0':(c.p>0?'+':'')+c.p.toFixed(1)+'% จากปี 2569'} · ${lim}${c.k==='down'&&rule.downNote?' · *** '+rule.downNote+' ***':''}`};
   });
 }
 const alertBadge = key => { const a=ALERTS[key]; return a ? `<div class="alertmsg">⚠ ${esc(a.msg)} <span>(${esc(a.why)})</span></div>` : ''; };
@@ -529,7 +559,7 @@ const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 const short = n => String(n||'').replace('โรงพยาบาล','รพ.');
 
 const st = {plan:null, planHosp:null, planName:'', planFile:'', planNames:{}, isSample:false, hosp:null, warn:'',
-  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eopen:new Set(), eonly:false, ezero:true, etype:'all', ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
+  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, relopen:new Set(), edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eopen:new Set(), eonly:false, ezero:true, etype:'all', ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
   pby:'level', popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
 let PEER = {list:[], v:{}, tot:{}};
 
@@ -746,22 +776,29 @@ function render(){
   const ncol = 2 + OY().length*2 + PY().length*2;
   const flagCls = r => r.flag&&st.plan ? ' flag'+(r.fdir==='up'?' fup':'') : '';
   const secRow = (label, s, cls='sec') => `<tr class="${cls}"><td class="l nm">${label}</td>${amt(s.plan,'plan')}${cells(s)}</tr>`;
-  const rowHTML = (r, cls='', pre='') => `<tr class="${cls}${flagCls(r)}${alertCls(r.code)}"><td class="nm l"><div class="n">${pre}${esc(r.name)}</div><div class="cd">${r.code}</div>${alertBadge(r.code)}</td>${amt(r.plan,'plan')}${cells(r)}</tr>`;
+  const rowHTML = (r, cls='', pre='') => `<tr class="${cls}${flagCls(r)}${alertCls(r.code)}"><td class="nm l"><div class="n">${pre}${esc(r.name)}</div><div class="cd">${r.code}</div>${alertBadge(r.code)}${cls.includes('relrow')?'':relToggle(r.code)}</td>${amt(r.plan,'plan')}${cells(r)}</tr>`;
   const empty = `<tr><td colspan="${ncol}" class="empty">ไม่มีบรรทัดที่ตรงกับตัวกรอง</td></tr>`;
+  const byCode = Object.fromEntries(all.map(r=>[r.code,r]));
+  const relRows = key => st.relopen.has(key) && REL[key] ? REL[key].map(c=>byCode[c] ? rowHTML(byCode[c],'relrow','<span class="relpre">↳ ดูประกอบ</span> ') : '').join('') : '';
   let html='';
   if(st.type==='all'||st.type==='G'){
-    const gRow = g=>{
+    const gById = Object.fromEntries(groups.map(x=>[x.gid,x]));
+    const gRow = (g, extra='')=>{
+      if(g.g.single){ const k=byCode[g.kcodes[0]]; return k ? rowHTML(k, 'single'+(g.g.brk?' gbrk':'')) : ''; }
+      if(g.g.brk) extra+=' gbrk';
       const open = st.open.has(g.gid);
-      let h = `<tr class="grow${open?' open':''}${flagCls(g)}${alertCls('G:'+g.gid)}" data-g="${g.gid}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.kcodes.length} บัญชีย่อย</div>${alertBadge('G:'+g.gid)}</td>${amt(g.plan,'plan')}${cells(g)}</tr>`;
+      let h = `<tr class="grow ${extra}${open?' open':''}${flagCls(g)}${alertCls('G:'+g.gid)}" data-g="${g.gid}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.g.parts?g.g.parts.length+' รายการย่อย':g.kcodes.length+' บัญชีย่อย'}</div>${alertBadge('G:'+g.gid)}${relToggle('G:'+g.gid)}</td>${amt(g.plan,'plan')}${cells(g)}</tr>`;
       if(SHOW_UCIP_EST && g.gid==='ucip'){ const e=ucipEst(st.hosp); if(e!=null){ const er={plan:e, v:g.v, p:{}};
-        h += `<tr class="estrow"><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่ ${st.plan?`<span class="cd">แผนสูง/ต่ำกว่าประมาณการ</span> ${pillHTML(pct(g.plan,e))}`:''}</div><div class="cd">ช่องแผน 2570 = ค่าประมาณการ · %Δ = ประมาณการเทียบงบทดลองแต่ละปี (บรรทัดบน)</div></td>${amt(e,'plan')}${OY().map(y=>`<td></td><td class="pc">${pillHTML(pct(e,g.v[y]))}</td>`).join('')}${PY().map(()=>'<td class="pk"></td><td class="pk"></td>').join('')}</tr>`; } }
-      if(open) h += g.kids.map(k=>rowHTML(k,'kid', g.g.neg ? (sgn(g.g,k.code)<0?'<b class="sg">(−) หัก</b> ':'<b class="sg">(+)</b> ') : '')).join('');
+        h += `<tr class="estrow${ALERTS['G:ucip']?' warnrow':''}"><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่ ${st.plan?`<span class="cd">แผนสูง/ต่ำกว่าประมาณการ</span> ${pillHTML(pct(g.plan,e))}`:''}</div><div class="cd">ช่องแผน 2570 = ค่าประมาณการ · %Δ = ประมาณการเทียบงบทดลองแต่ละปี (บรรทัดบน)</div></td>${amt(e,'plan')}${OY().map(y=>`<td></td><td class="pc">${pillHTML(pct(e,g.v[y]))}</td>`).join('')}${PY().map(()=>'<td class="pk"></td><td class="pk"></td>').join('')}</tr>`; } }
+      h += relRows('G:'+g.gid);
+      if(open && g.g.parts) h += g.g.parts.map(pt=> pt.g ? gRow(gById[pt.g],'kid') : (byCode[pt.code] ? rowHTML(byCode[pt.code],'kid') : '')).join('');
+      else if(open) h += g.kids.map(k=>rowHTML(k, extra?'kid kid2':'kid', g.g.neg ? (sgn(g.g,k.code)<0?'<b class="sg">(−) หัก</b> ':'<b class="sg">(+)</b> ') : '')).join('');
       return h;
     };
     if(!gs.length) html += `<tr class="gsec"><td class="l nm">หัวข้อรวม</td><td colspan="${ncol-1}"></td></tr>` + empty;
     [['4','หัวข้อรวม · รายได้ (หมวด 4)'],['5','หัวข้อรวม · ค่าใช้จ่าย (หมวด 5)']].forEach(([pre,lab])=>{
-      const sg = gs.filter(g=>gsec(g.g)===pre); if(!sg.length) return;
-      html += `<tr class="gsec"><td class="l nm">${lab}</td><td colspan="${ncol-1}"></td></tr>` + sg.map(gRow).join('');
+      const sg = gs.filter(g=>gsec(g.g)===pre && !g.g.nested); if(!sg.length) return;
+      html += `<tr class="gsec"><td class="l nm">${lab}</td><td colspan="${ncol-1}"></td></tr>` + sg.map(g=>gRow(g)).join('');
     });
   }
   ['4','5'].forEach(pre=>{
@@ -769,7 +806,7 @@ function render(){
     let sub = rows.filter(r=>r.code[0]===pre);
     if(key) sub.sort((a,b)=>key(b)-key(a));
     html += secRow(pre==='4'?(st.type==='all'?'รายได้ (หมวด 4) รวมทั้งหมวด · บัญชีในหัวข้อรวมแสดงไว้ด้านบน':'รายได้ (หมวด 4) รวมทั้งหมวด'):(st.type==='all'?'ค่าใช้จ่าย (หมวด 5) รวมทั้งหมวด · บัญชีในหัวข้อรวมแสดงไว้ด้านบน':'ค่าใช้จ่าย (หมวด 5) รวมทั้งหมวด'), pre==='4'?r4:r5);
-    html += sub.length ? sub.map(r=>rowHTML(r)).join('') : empty;
+    html += sub.length ? sub.map(r=>rowHTML(r)+relRows(r.code)).join('') : empty;
   });
   $('#tb').innerHTML = html;
   window.__rows = st.type==='G' ? gs : (st.type==='all' ? [...gs, ...rows] : rows);
@@ -1044,7 +1081,7 @@ function renderEditSummary(){
 function editRowHTML(x, extra=''){
   const ed = x.r in st.edits, v = ed ? st.edits[x.r] : x.orig, hy=y=>TB.y[y][st.hosp] ? hist(y,x.code) : null;
   const inVal = n => n.toLocaleString('en-US',{maximumFractionDigits:2});
-  return `<tr data-r="${x.r}" class="${ed?'edited':''} ${extra}${alertCls(x.code)}"><td class="num rn">${x.r}</td><td class="nm l"><div class="n">${esc(x.name||TB.acc[x.code]||'')}</div>${alertBadge(x.code)}<div class="cd">${x.code}${x.f?` · <span title="สูตรเดิมในไฟล์">สูตร ${esc(x.f)}</span>`:''}</div></td>
+  return `<tr data-r="${x.r}" class="${ed?'edited':''} ${extra}${alertCls(x.code)}"><td class="num rn">${x.r}</td><td class="nm l"><div class="n">${extra.includes('relrow')?'<span class="relpre">↳ ดูประกอบ</span> ':''}${esc(x.name||TB.acc[x.code]||'')}</div>${alertBadge(x.code)}${extra.includes('relrow')?'':relToggle(x.code)}<div class="cd">${x.code}${x.f?` · <span title="สูตรเดิมในไฟล์">สูตร ${esc(x.f)}</span>`:''}</div></td>
     <td class="amt">${fmt2.format(x.orig)}</td>
     <td class="inp"><input type="text" inputmode="decimal" aria-label="จำนวนเงินใหม่ แถว ${x.r}" value="${inVal(v)}"></td>
     <td class="amt diff">${ed?((v-x.orig>0?'+':'')+fmt2.format(v-x.orig)):''}</td>
@@ -1052,6 +1089,7 @@ function editRowHTML(x, extra=''){
     <td class="rsn">${needsReason(x)?`<textarea rows="2" aria-label="เหตุผล แถว ${x.r}" placeholder="เหตุผล (ไม่บังคับ)">${esc(st.reasons[x.r]||'')}</textarea>`:'<span class="cd">–</span>'}${x.note?`<div class="cd" title="หมายเหตุเดิมในคอลัมน์ D">หมายเหตุเดิม: ${esc(x.note)}</div>`:''}</td>
     <td>${ed?'<button type="button" class="lnk undo" title="คืนค่าเดิม">คืนค่า</button>':''}</td></tr>`;
 }
+function editRelRows(key){ return st.relopen.has(key) && REL[key] ? REL[key].flatMap(c=>st.rows5.filter(x=>x.code===c)).map(x=>editRowHTML(x,'relrow')).join('') : ''; }
 function renderEdit(){
   renderEditSummary();
   if(!st.rows5){ $('#etb').innerHTML=''; return; }
@@ -1067,27 +1105,33 @@ function renderEdit(){
   if(mode==='file' || mode==='4' || mode==='5'){
     const rows=st.rows5.filter(x=>(mode==='file'||x.code[0]===mode) && pass(x)); shown=rows.length;
     if(mode!=='file') html += editSecHTML(mode);
-    html += rows.length ? rows.map(x=>editRowHTML(x)).join('') : empty;
+    html += rows.length ? rows.map(x=>editRowHTML(x)+editRelRows(x.code)).join('') : empty;
   } else {
     const grouped=GROUPED();
     const byCode = c => st.rows5.filter(x=>x.code===c);
     ['4','5'].forEach(pre=>{
-      const gs=GROUPS.filter(g=>gsec(g)===pre);
+      const gs=GROUPS.filter(g=>gsec(g)===pre && !g.nested);
       let gh='';
       gs.forEach(g=>{
         const kids=g.codes.flatMap(byCode), vis=kids.filter(pass);
         const nameHit = q && g.name.toLowerCase().includes(q);
         if(filt && !vis.length && !nameHit) return;
         const open = st.eopen.has(g.id) || (filt && vis.length);
-        gh += editGroupHTML(g, open) + (g.id==='ucip' ? editEstHTML() : '');
-        if(open) gh += (filt && !nameHit ? vis : kids).map(x=>editRowHTML(x,'kid')).join('');
+        if(g.single){ gh += kids.map(x=>editRowHTML(x,'single'+(g.brk?' gbrk':''))).join(''); shown += vis.length; return; }
+        gh += editGroupHTML(g, open, g.brk?'gbrk':'') + (g.id==='ucip' ? editEstHTML() : '') + editRelRows('G:'+g.id);
+        if(open && g.parts && !(filt && !nameHit)) gh += g.parts.map(pt=>{
+            if(pt.code) return byCode(pt.code).map(x=>editRowHTML(x,'kid')).join('');
+            const sgp=GROUPS.find(z=>z.id===pt.g), so=st.eopen.has(sgp.id);
+            return editGroupHTML(sgp, so, 'kid') + (so ? sgp.codes.flatMap(byCode).map(x=>editRowHTML(x,'kid kid2')).join('') : '');
+          }).join('');
+        else if(open) gh += (filt && !nameHit ? vis : kids).map(x=>editRowHTML(x,'kid')).join('');
         shown += vis.length;
       });
       if(gh) html += `<tr class="gsec"><td class="l nm" colspan="2">หัวข้อรวม · ${pre==='4'?'รายได้ (หมวด 4)':'ค่าใช้จ่าย (หมวด 5)'}</td><td colspan="11"></td></tr>` + gh;
     });
     if(mode==='all') ['4','5'].forEach(pre=>{
       const rows=st.rows5.filter(x=>x.code[0]===pre && !grouped.has(x.code) && pass(x)); shown+=rows.length;
-      html += editSecHTML(pre, true) + (rows.length ? rows.map(x=>editRowHTML(x)).join('') : empty);
+      html += editSecHTML(pre, true) + (rows.length ? rows.map(x=>editRowHTML(x)+editRelRows(x.code)).join('') : empty);
     });
   }
   $('#ecount').textContent = `แสดง ${shown} จาก ${st.rows5.length} บรรทัด`;
@@ -1103,10 +1147,10 @@ function editAggCells(o, codes, sign=()=>1){
   return `<td class="amt">${fmt2.format(o.orig)}</td><td class="amt plan">${fmt2.format(o.cur)}</td><td class="amt diff">${Math.abs(o.cur-o.orig)>=0.005?((o.cur-o.orig>0?'+':'')+fmt2.format(o.cur-o.orig)):''}</td>`
     + YEARS.map(y=>{ const h=hv(y); return `<td class="amt hist">${h==null?'–':fmt.format(h)}</td><td class="pc">${pillHTML(pct(o.cur,h))}</td>`; }).join('') + '<td></td><td></td>';
 }
-function editGroupHTML(g, open){
+function editGroupHTML(g, open, extra=''){
   const kids=g.codes.flatMap(c=>st.rows5.filter(x=>x.code===c)), sg=c=>sgn(g,c);
   const o=sumRowsVals(kids, sg), ed=kids.some(x=>x.r in st.edits);
-  return `<tr class="grow egrow${open?' open':''}${ed?' edited':''}${alertCls('G:'+g.id)}" data-eg="${g.id}"><td></td><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.codes.length} บัญชีย่อย${g.neg?' · มีรายการหัก':''}</div>${alertBadge('G:'+g.id)}</td>${editAggCells(o, g.codes, sg)}</tr>`;
+  return `<tr class="grow egrow ${extra}${open?' open':''}${ed?' edited':''}${alertCls('G:'+g.id)}" data-eg="${g.id}"><td></td><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.parts?g.parts.length+' รายการย่อย':g.codes.length+' บัญชีย่อย'}${g.neg?' · มีรายการหัก':''}</div>${alertBadge('G:'+g.id)}${relToggle('G:'+g.id)}</td>${editAggCells(o, g.codes, sg)}</tr>`;
 }
 function editSecHTML(pre, excl){
   const rows=st.rows5.filter(x=>x.code[0]===pre), o=sumRowsVals(rows), codes=[...new Set(rows.map(x=>x.code))];
@@ -1114,7 +1158,7 @@ function editSecHTML(pre, excl){
 }
 function refreshEditAggregates(code){
   if(GROUPS.find(g=>g.id==='ucip').codes.includes(code)){ const er=document.querySelector('#etb tr[data-eest]'); if(er) er.outerHTML=editEstHTML(); }
-  GROUPS.filter(g=>g.codes.includes(code)).forEach(g=>{ const tr=document.querySelector(`#etb tr[data-eg="${g.id}"]`); if(tr) tr.outerHTML=editGroupHTML(g, tr.classList.contains('open')); });
+  GROUPS.filter(g=>g.codes.includes(code)).forEach(g=>{ const tr=document.querySelector(`#etb tr[data-eg="${g.id}"]`); if(tr) tr.outerHTML=editGroupHTML(g, tr.classList.contains('open'), tr.classList.contains('kid')?'kid':(tr.classList.contains('gbrk')?'gbrk':'')); });
   document.querySelectorAll(`#etb tr[data-esec^="${code[0]}"]`).forEach(tr=>{ tr.outerHTML=editSecHTML(code[0], tr.dataset.esec.endsWith('x')); });
 }
 function editEstHTML(){
@@ -1122,7 +1166,7 @@ function editEstHTML(){
   const e=ucipEst(st.hosp); if(e==null) return '';
   const g=GROUPS.find(x=>x.id==='ucip'), kids=g.codes.flatMap(c=>st.rows5.filter(x=>x.code===c)), cur=sumRowsVals(kids).cur;
   const hv=y=>TB.y[y][st.hosp] ? g.codes.reduce((a,c)=>a+hist(y,c),0) : null, c=pct(cur,e);
-  return `<tr class="estrow" data-eest="1"><td></td><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่</div><div class="cd">อัตราในเขต ${fmt.format(st.ucRate)} บาท/AdjRW · ค่าใหม่ของหัวข้อ${c.k==='up'?'สูงกว่า':c.k==='down'?'ต่ำกว่า':'เท่ากับ'}ประมาณการ ${pillHTML(c)}</div></td>
+  return `<tr class="estrow${ALERTS['G:ucip']?' warnrow':''}" data-eest="1"><td></td><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่</div><div class="cd">อัตราในเขต ${fmt.format(st.ucRate)} บาท/AdjRW · ค่าใหม่ของหัวข้อ${c.k==='up'?'สูงกว่า':c.k==='down'?'ต่ำกว่า':'เท่ากับ'}ประมาณการ ${pillHTML(c)}</div></td>
     <td></td><td class="amt plan" title="ค่าประมาณการ">${fmt2.format(e)}</td><td class="amt diff" title="ค่าใหม่ของหัวข้อ − ประมาณการ">${(cur-e>0?'+':'')+fmt2.format(cur-e)}</td>
     ${YEARS.map(y=>{const h=hv(y);return `<td></td><td class="pc" title="ประมาณการเทียบงบทดลอง ${y}">${pillHTML(pct(e,h))}</td>`}).join('')}<td></td><td></td></tr>`;
 }
@@ -1133,7 +1177,7 @@ function applyEdit(r, raw){
   if(v===undefined || (String(raw).trim()!=='' && v===null)){ setExpMsg('ใส่ได้เฉพาะตัวเลข',true); return; }
   if(v===null || Math.abs(v-x.orig)<0.005) delete st.edits[r]; else st.edits[r]=v;
   rebuildPlanFromRows(); render();
-  const tr=document.querySelector(`#etb tr[data-r="${r}"]`); if(tr){ tr.outerHTML=editRowHTML(x, tr.classList.contains('kid')?'kid':''); }
+  document.querySelectorAll(`#etb tr[data-r="${r}"]`).forEach(tr=>{ tr.outerHTML=editRowHTML(x, ['relrow','kid','kid2','single','gbrk'].filter(c=>tr.classList.contains(c)).join(' ')); });
   refreshEditAggregates(x.code);
   // the row was re-rendered: if keyboard focus was heading into it (Tab to the reason box), put it back
   setTimeout(()=>{ if(document.activeElement && document.activeElement!==document.body) return;
@@ -1313,6 +1357,9 @@ document.querySelectorAll('.tg').forEach(b=>b.addEventListener('click',()=>{ st.
 document.querySelectorAll('.lnk[data-all]').forEach(b=>b.addEventListener('click',()=>{
   const k=b.dataset.all, on=!YEARS.every(y=>st.cols[k+y]); YEARS.forEach(y=>st.cols[k+y]=on); syncCols(); render(); }));
 function toggleG(id){ st.open.has(id)?st.open.delete(id):st.open.add(id); render(); }
+function toggleRel(key){ st.relopen.has(key)?st.relopen.delete(key):st.relopen.add(key); }
+document.addEventListener('click',e=>{ const b=e.target.closest('.reltg'); if(!b) return; e.stopPropagation(); toggleRel(b.dataset.rel);
+  if(b.closest('#etb')) renderEdit(); else render(); const nb=document.querySelector(`${b.closest('#etb')?'#etb':'#tb'} .reltg[data-rel="${b.dataset.rel}"]`); if(nb) nb.focus(); }, true);
 $('#tb').addEventListener('click',e=>{ const tr=e.target.closest('tr.grow'); if(tr && e.target.closest('td.nm')) toggleG(tr.dataset.g); });
 $('#tb').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('tr.grow td.nm')){ e.preventDefault(); const id=e.target.parentElement.dataset.g; toggleG(id); const n=document.querySelector(`tr.grow[data-g="${id}"] td.nm`); if(n) n.focus(); } });
 $('#expand').addEventListener('click',()=>{ const all=GROUPS.every(g=>st.open.has(g.id)); st.open = all? new Set() : new Set(GROUPS.map(g=>g.id)); $('#expand').textContent = all?'ขยายหัวข้อรวมทั้งหมด':'ยุบหัวข้อรวมทั้งหมด'; render(); });
