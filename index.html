@@ -234,6 +234,27 @@ tr.estrow td.amt.plan{font-style:italic}
 .etab td.rsn textarea:focus{outline:2px solid var(--accent);outline-offset:0}
 .etab td.hist{color:var(--muted)}
 .etab td.diff{color:var(--warn-ink);font-weight:600}
+.tabs .expbar .btn{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;margin:0;padding:6px 12px}
+.tabs .expbar .btn.exp{border-color:var(--accent);color:var(--accent)}
+.tabs .expbar .btn.exp:hover{background:var(--accent);color:var(--surface)}
+.tabs .expbar .btn:hover{border-color:var(--accent)}
+.tabs .expbar .btn:disabled{opacity:.4;cursor:default}
+.fsz{display:flex;align-items:center;gap:4px;margin-right:6px}
+.tabs .fsz .btn{padding:4px 10px}
+.fsz #fsrs{min-width:58px;font-size:12px}
+/* category names a little larger by default; the A−/A+ control scales every data table */
+tbody td.nm .n{font-size:15px}
+tr.sec td.nm,tr.gsec td.nm,tr.grow td.nm .n,tr.egrow td.nm .n,.ptab tr.pcat td.nm,.ptab tr.ptot td.nm{font-size:16px}
+.tablebox table,.baltab table{zoom:var(--tz,1)}
+.alertmsg{margin-top:3px;font-family:var(--f-body);font-size:12.5px;font-weight:600;color:var(--down)}
+.alertmsg span{font-weight:400;color:var(--muted)}
+tr.warnrow td{background:color-mix(in srgb,var(--down-bg) 55%,var(--surface))!important}
+tr.warnrow td.nm{box-shadow:inset 4px 0 0 var(--down-strong)}
+.alertbox{border:1px solid var(--down-strong);background:color-mix(in srgb,var(--down-bg) 60%,var(--surface));color:var(--ink);border-radius:10px;padding:12px 16px;font-size:13.5px}
+.alertbox>b{color:var(--down);font-family:var(--f-display);font-size:15px}
+.alertbox ul{margin:6px 0 0;padding-left:20px;display:grid;gap:2px}
+.alertbox li span{color:var(--muted)}
+.alertbox.ok{border-color:var(--up-strong);background:color-mix(in srgb,var(--up-bg) 60%,var(--surface));color:var(--up);font-weight:600}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 .credit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:2px;font-size:13px;color:var(--muted)}
@@ -283,6 +304,7 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
     <button type="button" role="tab" id="tab-bal" aria-selected="false" aria-controls="view-bal" data-view="bal">ตรวจดุลงบประมาณ <span class="badge" id="balbadge"></span></button>
     <button type="button" role="tab" id="tab-edit" aria-selected="false" aria-controls="view-edit" data-view="edit">แก้ไขตัวเลขแผน <span class="badge" id="editbadge"></span></button>
     <div class="expbar"><span id="expmsg" class="hospmeta" aria-live="polite"></span>
+      <div class="fsz" role="group" aria-label="ขนาดตัวอักษรในตาราง"><span class="hospmeta">ขนาดตัวอักษร</span><button type="button" class="btn" id="fsdn" aria-label="ลดขนาดตัวอักษร">A−</button><button type="button" class="btn num" id="fsrs" title="กลับเป็นขนาดปกติ">100%</button><button type="button" class="btn" id="fsup" aria-label="เพิ่มขนาดตัวอักษร">A+</button></div>
       <button class="btn exp" type="button" id="expxlsx" title="ทุกแถบรวมในไฟล์เดียว ตามตัวกรองและคอลัมน์ที่เปิดอยู่">⬇ Excel</button>
       <button class="btn exp" type="button" id="exppdf" title="ส่งออกแถบที่เปิดอยู่เป็น PDF (A4 แนวนอน)">⬇ PDF</button></div>
   </nav>
@@ -320,6 +342,7 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
 
   <div id="view-cmp" class="viewcmp">
   <section class="kpis" id="kpis"></section>
+  <div class="alerts-slot" aria-live="polite"></div>
 
   <section class="card est" id="estcard" aria-labelledby="esth" hidden>
     <div class="esthead"><h2 id="esth">ประมาณการรายได้ UC IP จากผลงานเดิม × อัตราใหม่</h2>
@@ -374,6 +397,7 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
       <h2 id="edith">แก้ไขตัวเลขงบทดลองปี 2570 แล้วส่งออกไฟล์เดิม</h2>
       <div class="hospmeta">แก้จำนวนเงินในแถบ “5.งบทดลอง รพ.” คอลัมน์ C ทีละบรรทัด ตัวเลขใหม่ใช้ในการวิเคราะห์ทุกแถบทันที · ปุ่มส่งออกกดได้ทันทีแม้ยังไม่แก้ จะเขียนตัวเลขของทุกบรรทัดตามหน้าเว็บลงคอลัมน์ C ของไฟล์ที่อัปโหลด แถบอื่น สูตร และรูปแบบในไฟล์คงเดิม และ Excel จะคำนวณสูตรใหม่ทั้งไฟล์เมื่อเปิด · ช่องในคอลัมน์ C ที่เดิมเป็นสูตร จะกลายเป็นตัวเลขผลลัพธ์ · ในไฟล์ที่ส่งออก ช่องที่แก้ตัวเลข (คอลัมน์ C) และช่องเหตุผล (คอลัมน์ D) จะมีพื้นสีเหลืองจาง</div>
       <div class="balsum" id="editsum"></div>
+      <div class="alerts-slot" aria-live="polite"></div>
       <div class="balsum"><button class="btn exp" type="button" id="editexport" disabled>⬇ ส่งออกไฟล์แผนที่แก้ไขแล้ว (.xlsx)</button><button class="btn" type="button" id="editreset">คืนค่าเดิมทั้งหมด</button><span class="hospmeta" id="editnote"></span></div>
     </div>
     <div class="bar" role="toolbar" aria-label="ตัวกรองบรรทัด">
@@ -438,6 +462,7 @@ const GROUPS = [
   {id:'stpop', name:'STP OP (รวม)', codes:['4301020106.709','4301020106.711','4301020106.712','4301020106.704']},
   {id:'stpip', name:'STP IP (รวม)', codes:['4301020106.710','4301020106.705','4301020106.706']},
   {id:'f1112', name:'ค่าตอบแทน ฉ.11/ฉ.12 (รวม)', codes:['5104040102.111','5104040102.112','5104040102.113','5104040102.114','5104040102.115','5104040102.116','5104040102.117','5104040102.118']},
+  {id:'lab', sec:'5', name:'วัสดุวิทยาศาสตร์ + ค่าจ้างตรวจ Lab (รวม)', codes:['5104010112.114','5104030205.104']},
   {id:'food', sec:'5', name:'ค่าจ้างเหมาประกอบอาหาร + วัสดุบริโภค (รวม)', codes:['5104030205.112','5104010112.103']},
   {id:'refer', sec:'5', name:'ค่ารักษาตามจ่ายในจังหวัด (สุทธิ)', codes:['5104030299.202','4301020105.271','4301020105.240'], neg:['4301020105.271','4301020105.240']},
 ];
@@ -449,6 +474,45 @@ const SHOW_UCIP_EST = true;
 const UCIP = {"06009":[27.1196,0.0,0.0,675.4034],"10713":[2026.5979,2135.3832,803.2421,84509.9894],"11119":[177.8458,83.2374,24.6295,23986.8551],"11120":[6.4937,0.0,0.0,2904.3166],"11121":[43.744,3.1184,0.0,4623.0468],"11122":[124.2458,0.0,0.0,3990.5021],"11123":[23.1498,0.0,0.0,3552.1863],"11124":[7.9158,0.0,0.0,2236.4805],"11125":[153.5665,105.2721,12.8596,16604.4874],"11126":[15.1219,0.0,0.0,4438.8481],"11127":[23.3491,0.0,0.0,3106.2304],"11128":[193.4015,33.476,4.705,16906.9913],"11129":[35.1844,0.0,0.0,3131.4951],"11130":[376.4672,131.5217,83.8265,19757.9982],"11131":[78.2965,0.0,0.0,5816.6261],"11132":[20.0583,0.0,0.0,4322.6973],"11133":[11.0029,0.0,0.0,2713.7668],"11134":[35.8213,0.0,0.0,3600.1363],"11135":[49.6102,0.0,0.0,3067.3301],"11136":[8.6408,0.0,0.0,1125.6804],"11137":[16.0188,0.0,0.0,2097.6041],"11138":[10.2522,0.0,0.0,2340.448],"11139":[23.5954,0.0,0.0,1962.5986],"11643":[26.8062,0.0,0.0,1504.0072],"23736":[7.7008,0.0,0.0,1085.5182],"10714":[491.6663,240.2694,165.6352,39530.8007],"11140":[13.2009,0.0,0.0,2274.6112],"11141":[13.0305,0.0,0.0,1793.2043],"11142":[35.0705,0.0,0.0,7493.6736],"11143":[2.9912,0.0,0.0,1792.0581],"11144":[33.0148,0.0,0.0,4696.7137],"11145":[4.6186,0.0,0.0,1222.6497],"24956":[8.3269,0.0,0.0,996.8002],"10672":[1468.8612,420.0379,264.5403,98712.7323],"11146":[20.5528,0.0,0.0,1643.7518],"11147":[207.5851,0.0,0.0,18724.6669],"11148":[6.3989,0.0,0.0,3251.1425],"11149":[19.8485,0.0,0.0,2681.73],"11150":[25.5319,0.0,0.0,2895.014],"11151":[11.508,0.0,0.0,2227.4021],"11152":[72.6273,0.0,0.0,8045.3557],"11153":[8.1696,0.0,0.0,717.4112],"11154":[14.8767,0.0,0.0,2906.7185],"11155":[9.3382,0.0,0.0,2507.2517],"11156":[15.7906,0.0,0.0,2015.7108],"11157":[14.8262,0.0,0.0,2158.3518],"10715":[834.9367,164.2863,69.0922,48826.6869],"11166":[43.3076,0.0,0.0,2730.758],"11167":[47.3913,0.0,0.0,2994.3765],"11169":[76.3228,0.0,0.0,5159.4618],"11170":[53.4291,0.0,0.0,3453.3229],"11171":[40.7572,0.0,0.0,2450.4022],"11172":[22.2609,0.0,0.0,1274.0598],"11452":[40.0772,0.0,0.0,2090.0313],"10716":[628.8909,211.6995,60.0858,46921.6908],"11173":[8.6266,0.0,0.0,1412.8981],"11174":[6.3354,0.0,0.0,971.0376],"11175":[43.7068,0.0,0.0,2356.5009],"11176":[34.335,0.0,0.0,2151.1895],"11177":[97.3265,0.0,0.0,4930.7405],"11178":[11.1957,0.0,0.0,1133.4856],"11179":[19.4771,0.0,0.0,1645.0176],"11180":[10.1185,0.0,0.0,1586.3304],"11181":[9.566,0.0,0.0,992.852],"11182":[18.5001,0.0,0.0,1246.4952],"11183":[35.6726,0.0,0.0,1254.7591],"11453":[345.5249,0.0,0.0,11578.3752],"11625":[2.2764,0.0,0.0,684.5252],"25017":[12.4593,0.0,0.0,689.3732],"10717":[396.2933,215.5729,121.5649,31626.269],"10718":[187.7049,25.5549,0.0,19640.6167],"11184":[14.3402,0.0,0.0,1902.556],"11185":[10.9537,0.0,0.0,928.6206],"11186":[16.1641,0.0,0.0,3302.7956],"11187":[38.7097,0.0,0.0,3748.7252],"11188":[18.575,0.0,0.0,1892.4881],"10674":[1915.2192,1086.146,649.4024,101766.2718],"11189":[51.5347,0.0,0.0,4623.0494],"11190":[149.6526,0.0,0.0,11889.9993],"11191":[15.7944,0.0,0.0,1801.1979],"11192":[115.0513,0.0,0.0,11138.8858],"11193":[17.662,0.0,0.0,2063.6351],"11194":[209.475,6.6449,0.0,10981.5314],"11195":[16.0403,0.0,0.0,4006.6643],"11196":[33.7799,0.0,0.0,4526.8061],"11197":[81.2229,1.5892,0.0,4674.107],"11198":[10.8404,0.0,0.0,1821.275],"11199":[26.3647,0.0,0.0,2860.5556],"11200":[15.2584,0.0,0.0,2035.516],"11201":[43.4299,0.0,0.0,3675.319],"11202":[21.3655,0.0,0.0,2105.8168],"11454":[77.5451,0.0,0.0,5220.5272],"15012":[26.7908,0.0,0.0,3575.8356],"10719":[45.9295,38.8864,0.0,5706.5622],"11203":[8.9829,0.0,0.0,1843.4472],"11204":[21.6756,0.0,0.0,2261.5301],"11205":[69.6958,94.6391,22.4143,5234.2284],"11206":[3.98,0.0,0.0,1977.4251],"11207":[121.8067,0.0,0.0,1549.6787],"11208":[15.9649,3.1184,0.0,1480.624]}; // HCODE: [SumADj นอกเขต, NB<1500g, NB<1500g หัตถการราคาแพง, SumAdjRW ในเขตหัก Homeward]
 const UCIP_ITEMS = [['SumAdjRW นอกเขต',10000,0],['SumAdjRW ทารกแรกเกิด น้ำหนัก <1,500 g',10000,1],['SumAdjRW ทารกแรกเกิด <1,500 g มีหัตถการราคาแพง',12000,2],['SumAdjRW ในเขต หัก Homeward (HT DM)',null,3]];
 function ucipEst(h){ const d=UCIP[h]; if(!d) return null; return UCIP_ITEMS.reduce((a,[n,rate,i])=>a+d[i]*(rate??st.ucRate),0); }
+// Review rules: flag figures that need a second look (vs own trial balance 2569). up/down = allowed % change; up:0 = any increase
+const RULES = [
+  {g:'ucop', up:5},
+  {g:'ucpp', up:0},
+  {code:'4301020105.243', zero:true},
+  {code:'5104020101.101', up:15, down:10},
+  {code:'5104030205.101', up:15, down:10},
+  {code:'4301020102.105', up:20, down:20},
+  {g:'ssop', up:20, down:20},
+  {g:'stpop', up:15, down:15},
+  {g:'lab', up:15, down:15},
+];
+let ALERTS = {};   // key: account code or 'G:'+group id -> {msg, why}
+function ruleValue(rule, getter){ if(rule.code) return getter(rule.code); const g=GROUPS.find(x=>x.id===rule.g); return g ? g.codes.reduce((a,c)=>a+sgn(g,c)*getter(c),0) : 0; }
+function computeAlerts(){
+  ALERTS={}; if(!st.plan) return;
+  const has69 = !!TB.y['2569'][st.hosp];
+  RULES.forEach(rule=>{
+    const key = rule.code || ('G:'+rule.g);
+    const name = rule.code ? (TB.acc[rule.code]||st.planNames[rule.code]||rule.code) : (GROUPS.find(x=>x.id===rule.g)||{}).name;
+    const plan = ruleValue(rule, c=>st.plan[c]||0);
+    if(rule.zero){ if(Math.abs(plan)>=0.005) ALERTS[key]={name, msg:'ให้แก้เลขช่องนี้เป็น 0', why:`แผน ${fmt.format(plan)} บาท`}; return; }
+    if(!has69) return;
+    const base = ruleValue(rule, c=>hist('2569',c)), c=pct(plan, base);
+    const lim = (rule.down!=null ? `เกณฑ์ +${rule.up}% / −${rule.down}%` : (rule.up ? `เกณฑ์ไม่เกิน +${rule.up}%` : 'เกณฑ์ไม่เกินปี 2569'));
+    let bad=false;
+    if(c.k==='new') bad = plan>0;
+    else if(c.k==='up') bad = c.p > rule.up;
+    else if(c.k==='down') bad = rule.down!=null && -c.p > rule.down;
+    if(bad) ALERTS[key]={name, msg:'ข้อมูลผิดปกติ โปรดทบทวน', why:`${c.k==='new'?'ปี 2569 เป็น 0':(c.p>0?'+':'')+c.p.toFixed(1)+'% จากปี 2569'} · ${lim}`};
+  });
+}
+const alertBadge = key => { const a=ALERTS[key]; return a ? `<div class="alertmsg">⚠ ${esc(a.msg)} <span>(${esc(a.why)})</span></div>` : ''; };
+const alertCls = key => ALERTS[key] ? ' warnrow' : '';
+function renderAlertBoxes(){
+  const ks=Object.keys(ALERTS);
+  const html = ks.length ? `<div class="alertbox"><b>⚠ ตรวจพบ ${ks.length} รายการที่ควรทบทวน</b><ul>${ks.map(k=>`<li><b>${esc(ALERTS[k].name)}</b> — ${esc(ALERTS[k].msg)} <span>(${esc(ALERTS[k].why)})</span></li>`).join('')}</ul></div>` : (st.plan ? '<div class="alertbox ok">✓ ไม่พบรายการผิดปกติตามเกณฑ์ตรวจทาน</div>' : '');
+  document.querySelectorAll('.alerts-slot').forEach(n=>n.innerHTML=html);
+}
 const gsec = g => g.sec || g.codes[0][0];
 const sgn = (g,c) => g.neg && g.neg.includes(c) ? -1 : 1;
 const $ = s => document.querySelector(s);
@@ -639,6 +703,7 @@ function cells(r){
        + PY().map(y=>amt(r.p[y],'pv pk')+`<td class="pc pk">${pillHTML(r.pc?r.pc[y]:pct(r.plan,r.p[y]))}</td>`).join('');
 }
 function render(){
+  computeAlerts(); renderAlertBoxes();
   computePeers(); renderPeerPanel(); renderHeadRow(); renderBalance(); renderPlanView(); renderEditSummary();
   const all = buildRows(), groups = buildGroups(all);
   $('#estcard').hidden = !SHOW_UCIP_EST;
@@ -675,13 +740,13 @@ function render(){
   const ncol = 2 + OY().length*2 + PY().length*2;
   const flagCls = r => r.flag&&st.plan ? ' flag'+(r.fdir==='up'?' fup':'') : '';
   const secRow = (label, s, cls='sec') => `<tr class="${cls}"><td class="l nm">${label}</td>${amt(s.plan,'plan')}${cells(s)}</tr>`;
-  const rowHTML = (r, cls='', pre='') => `<tr class="${cls}${flagCls(r)}"><td class="nm l"><div class="n">${pre}${esc(r.name)}</div><div class="cd">${r.code}</div></td>${amt(r.plan,'plan')}${cells(r)}</tr>`;
+  const rowHTML = (r, cls='', pre='') => `<tr class="${cls}${flagCls(r)}${alertCls(r.code)}"><td class="nm l"><div class="n">${pre}${esc(r.name)}</div><div class="cd">${r.code}</div>${alertBadge(r.code)}</td>${amt(r.plan,'plan')}${cells(r)}</tr>`;
   const empty = `<tr><td colspan="${ncol}" class="empty">ไม่มีบรรทัดที่ตรงกับตัวกรอง</td></tr>`;
   let html='';
   if(st.type==='all'||st.type==='G'){
     const gRow = g=>{
       const open = st.open.has(g.gid);
-      let h = `<tr class="grow${open?' open':''}${flagCls(g)}" data-g="${g.gid}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.kcodes.length} บัญชีย่อย</div></td>${amt(g.plan,'plan')}${cells(g)}</tr>`;
+      let h = `<tr class="grow${open?' open':''}${flagCls(g)}${alertCls('G:'+g.gid)}" data-g="${g.gid}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.kcodes.length} บัญชีย่อย</div>${alertBadge('G:'+g.gid)}</td>${amt(g.plan,'plan')}${cells(g)}</tr>`;
       if(SHOW_UCIP_EST && g.gid==='ucip'){ const e=ucipEst(st.hosp); if(e!=null){ const er={plan:e, v:g.v, p:{}};
         h += `<tr class="estrow"><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่ ${st.plan?`<span class="cd">แผนสูง/ต่ำกว่าประมาณการ</span> ${pillHTML(pct(g.plan,e))}`:''}</div><div class="cd">ช่องแผน 2570 = ค่าประมาณการ · %Δ = ประมาณการเทียบงบทดลองแต่ละปี (บรรทัดบน)</div></td>${amt(e,'plan')}${OY().map(y=>`<td></td><td class="pc">${pillHTML(pct(e,g.v[y]))}</td>`).join('')}${PY().map(()=>'<td class="pk"></td><td class="pk"></td>').join('')}</tr>`; } }
       if(open) h += g.kids.map(k=>rowHTML(k,'kid', g.g.neg ? (sgn(g.g,k.code)<0?'<b class="sg">(−) หัก</b> ':'<b class="sg">(+)</b> ') : '')).join('');
@@ -710,10 +775,13 @@ let MAPSRC = 'ผัง 13.Mapping จากแบบฟอร์ม Planfin 257
 const PREV = [['P04','รายได้ UC'],['P05','รายได้จาก EMS'],['P06','รายได้ค่ารักษาเบิกต้นสังกัด'],['P61','รายได้ค่ารักษา อปท.'],['P07','รายได้ค่ารักษาเบิกจ่ายตรงกรมบัญชีกลาง'],['P08','รายได้ประกันสังคม'],['P09','รายได้แรงงานต่างด้าว'],['P10','รายได้ค่ารักษาและบริการอื่น ๆ'],['P11','รายได้งบประมาณส่วนบุคลากร'],['P12','รายได้อื่น'],['P121','รายได้อื่น (ระบบบัญชีบันทึกอัตโนมัติ)'],['P13','รายได้งบลงทุน']];
 const PEXP = [['P14','ต้นทุนยา'],['P15','ต้นทุนเวชภัณฑ์มิใช่ยาและวัสดุการแพทย์'],['P151','ต้นทุนวัสดุทันตกรรม'],['P16','ต้นทุนวัสดุวิทยาศาสตร์การแพทย์'],['P17','เงินเดือนและค่าจ้างประจำ'],['P18','ค่าจ้างชั่วคราว/พกส./ค่าจ้างเหมาบุคลากรอื่น'],['P19','ค่าตอบแทน'],['P20','ค่าใช้จ่ายบุคลากรอื่น'],['P21','ค่าใช้สอย'],['P22','ค่าสาธารณูปโภค'],['P23','วัสดุใช้ไป'],['P24','ค่าเสื่อมราคาและค่าตัดจำหน่าย'],['P241','หนี้สูญและสงสัยจะสูญ'],['P25','ค่าใช้จ่ายอื่น'],['P251','ค่าใช้จ่ายอื่น (ระบบบัญชีบันทึกอัตโนมัติ)']];
 const PSUM = [['P13S','รวมรายได้'],['P26S','รวมค่าใช้จ่าย'],['P27S','รายได้สูง (ต่ำ) กว่าค่าใช้จ่ายสุทธิ'],['P29-R','รวมรายได้ (ไม่รวมรายได้อื่น (ระบบบัญชีอัตโนมัติ) และรายได้งบลงทุน)'],['P29-E','รวมค่าใช้จ่าย (ไม่รวมค่าเสื่อมราคาและค่าตัดจำหน่าย และค่าใช้จ่ายอื่น (ระบบบัญชีบันทึกอัตโนมัติ))'],['P29','EBITDA (รวมรายได้ (ไม่รวมรายได้งบลงทุน) − รวมค่าใช้จ่าย (ไม่รวมค่าเสื่อมราคาและค่าตัดจำหน่าย))']];
-function pSubs(pid){ const seen=new Map(); Object.entries(MAP).forEach(([c,[p,e,n]])=>{ if(p===pid && !seen.has(e)) seen.set(e,n); }); return [...seen]; }
+// accounts shown directly under their Planfin category instead of inside an Exp_Rev sub-group
+const PDIRECT = new Set(['5104010112.112','5104010112.115']);
+function pSubs(pid){ const seen=new Map(); Object.entries(MAP).forEach(([c,[p,e,n]])=>{ if(p===pid && !PDIRECT.has(c) && !seen.has(e)) seen.set(e,n); }); return [...seen]; }
+const pDirect = pid => [...PDIRECT].filter(c=>MAP[c] && MAP[c][0]===pid);
 function pAgg(d){
   const o={UNM:0};
-  if(d) for(const [c,v] of Object.entries(d)){ if(!v) continue; const m=MAP[c]; if(!m){ o.UNM+=v; continue; } o[m[0]]=(o[m[0]]||0)+v; const k='S:'+m[0]+':'+m[1]; o[k]=(o[k]||0)+v; }
+  if(d) for(const [c,v] of Object.entries(d)){ if(!v) continue; const m=MAP[c]; if(!m){ o.UNM+=v; continue; } o[m[0]]=(o[m[0]]||0)+v; const k=PDIRECT.has(c) ? 'A:'+c : 'S:'+m[0]+':'+m[1]; o[k]=(o[k]||0)+v; }
   const s=ids=>ids.reduce((a,[id])=>a+(o[id]||0),0);
   o.P13S=s(PREV); o.P26S=s(PEXP); o.P27S=o.P13S-o.P26S;
   o['P29-R']=o.P13S-(o.P121||0)-(o.P13||0); o['P29-E']=o.P26S-(o.P24||0)-(o.P251||0); o.P29=o['P29-R']-o['P29-E'];
@@ -732,10 +800,10 @@ function renderPlanView(){
   let h='';
   const cat = ([id,name]) => {
     const r=pRow(id,plan,own,peer), open=st.popen.has(id), subs=pSubs(id);
-    let x=`<tr class="pcat${open?' open':''}" data-p="${id}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span><span class="pid">${id}</span>${esc(name)}</span></div><div class="cd">${subs.length} หมวดย่อย</div></td>${amt(r.plan,'plan')}${cells(r)}</tr>`;
+    let x=`<tr class="pcat${open?' open':''}" data-p="${id}"><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span><span class="pid">${id}</span>${esc(name)}</span></div><div class="cd">${subs.length} หมวดย่อย${pDirect(id).length?` + ${pDirect(id).length} บัญชี`:''}</div></td>${amt(r.plan,'plan')}${cells(r)}</tr>`;
     if(open){
       const sr = subs.map(([e,n])=>[e,n,pRow('S:'+id+':'+e,plan,own,peer)]).filter(s=>vis(s[2]));
-      if(!sr.length) x+=`<tr class="psub"><td class="nm l" colspan="${ncol}" style="color:var(--faint)">ไม่มียอดในหมวดย่อย</td></tr>`;
+      if(!sr.length && !pDirect(id).length) x+=`<tr class="psub"><td class="nm l" colspan="${ncol}" style="color:var(--faint)">ไม่มียอดในหมวดย่อย</td></tr>`;
       sr.forEach(([e,n,s])=>{
         const k=id+':'+e, so=st.popen.has(k);
         x+=`<tr class="psub${so?' open':''}" data-p="${k}"><td class="nm l" tabindex="0" role="button" aria-expanded="${so}"><div class="n"><span class="caret">▸</span><span>${esc(n)}</span></div><div class="cd">Exp_Rev ${e}</div></td>${amt(s.plan,'plan')}${cells(s)}</tr>`;
@@ -745,6 +813,8 @@ function renderPlanView(){
           x+=`<tr class="pacc"><td class="nm l"><div class="n">${esc(TB.acc[c]||st.planNames[c]||'')}</div><div class="cd">${c}</div></td>${amt(a.plan,'plan')}${cells(a)}</tr>`;
         });
       });
+      pDirect(id).forEach(c=>{ const a=pRow('A:'+c,plan,own,peer); if(!vis(a)) return;
+        x+=`<tr class="psub pdir"><td class="nm l"><div class="n">${esc(TB.acc[c]||st.planNames[c]||'')}</div><div class="cd">${c} · บัญชีนอกหมวดย่อย</div></td>${amt(a.plan,'plan')}${cells(a)}</tr>`; });
     }
     return x;
   };
@@ -811,7 +881,7 @@ function exportExcel(){
   // 2) Planfin categories with sub-groups
   const plan = st.plan ? pAgg(st.plan) : null, own=Object.fromEntries(YEARS.map(y=>[y, TB.y[y][st.hosp]?pAgg(TB.y[y][st.hosp]):null])), peer=(y,k)=>PEER.n[y]?(PEER.pv[y][k]||0):null;
   const a2=[...metaRows('มุมมองตามหมวด Planfin (13.Mapping)'), ['ระดับ','รหัสหมวด','หมวด/หมวดย่อย', ...head.slice(3)]];
-  const cat=([id,name])=>{ a2.push(line('หมวด',id,name,pRow(id,plan,own,peer))); pSubs(id).forEach(([e,n])=>{ const r=pRow('S:'+id+':'+e,plan,own,peer); if(r.plan||o.some(y=>r.v[y])||p.some(y=>r.p[y])) a2.push(line('  หมวดย่อย',e,n,r)); }); };
+  const cat=([id,name])=>{ a2.push(line('หมวด',id,name,pRow(id,plan,own,peer))); pSubs(id).forEach(([e,n])=>{ const r=pRow('S:'+id+':'+e,plan,own,peer); if(r.plan||o.some(y=>r.v[y])||p.some(y=>r.p[y])) a2.push(line('  หมวดย่อย',e,n,r)); }); pDirect(id).forEach(c=>{ const r=pRow('A:'+c,plan,own,peer); if(r.plan||o.some(y=>r.v[y])||p.some(y=>r.p[y])) a2.push(line('  บัญชี',c,TB.acc[c]||'',r)); }); };
   PREV.forEach(cat); a2.push(line('รวม','P13S','รวมรายได้',pRow('P13S',plan,own,peer)));
   PEXP.forEach(cat); a2.push(line('รวม','P26S','รวมค่าใช้จ่าย',pRow('P26S',plan,own,peer)));
   PSUM.slice(2).forEach(([id,n])=>a2.push(line('สรุป',id,n,pRow(id,plan,own,peer))));
@@ -836,6 +906,7 @@ function exportExcel(){
     const g=groups.find(x=>x.gid==='ucip'); if(g && g.plan!=null) a4.push([],['แผน 2570 รายได้ UC IP (รวม)','','',r2(g.plan)],['ส่วนต่าง แผน − ประมาณการ','','',r2(g.plan-tot)],['%Δ แผนเทียบประมาณการ','','',pctNum(pct(g.plan,tot))]);
     XLSX.utils.book_append_sheet(wb, sheetFrom(a4,[50,14,14,18]), 'ประมาณการ UC IP');
   }
+  { const ks=Object.keys(ALERTS); const a6=[...metaRows('รายการที่ควรทบทวน (ตามเกณฑ์ตรวจทาน)'),['รายการ','ผลตรวจ','รายละเอียด']]; ks.forEach(k=>a6.push([ALERTS[k].name,ALERTS[k].msg,ALERTS[k].why])); if(!ks.length) a6.push(['ไม่พบรายการผิดปกติ']); XLSX.utils.book_append_sheet(wb, sheetFrom(a6,[50,30,50]), 'รายการต้องทบทวน'); }
   if(st.rows5){
     const a5=[...metaRows(`เหตุผลการปรับแผน (เปลี่ยนเกิน ±${st.rthr}% จากงบทดลองปี 2569)`), ['แถวในไฟล์','รหัส','ชื่อบัญชี','ค่าในไฟล์','ค่าใหม่','งบทดลอง 2569','%Δ เทียบ 2569','แก้ไขบนเว็บ','เหตุผล','หมายเหตุเดิม']];
     st.rows5.filter(needsReason).forEach(x=>{ const h=hist('2569',x.code), v=curVal(x); a5.push([x.r,x.code,x.name||TB.acc[x.code]||'',r2(x.orig),r2(v),r2(h),pctNum(pct(v,h)), x.r in st.edits?'แก้':'', st.reasons[x.r]||'', x.note||'']); });
@@ -967,7 +1038,7 @@ function renderEditSummary(){
 function editRowHTML(x, extra=''){
   const ed = x.r in st.edits, v = ed ? st.edits[x.r] : x.orig, hy=y=>TB.y[y][st.hosp] ? hist(y,x.code) : null;
   const inVal = n => n.toLocaleString('en-US',{maximumFractionDigits:2});
-  return `<tr data-r="${x.r}" class="${ed?'edited':''} ${extra}"><td class="num rn">${x.r}</td><td class="nm l"><div class="n">${esc(x.name||TB.acc[x.code]||'')}</div><div class="cd">${x.code}${x.f?` · <span title="สูตรเดิมในไฟล์">สูตร ${esc(x.f)}</span>`:''}</div></td>
+  return `<tr data-r="${x.r}" class="${ed?'edited':''} ${extra}${alertCls(x.code)}"><td class="num rn">${x.r}</td><td class="nm l"><div class="n">${esc(x.name||TB.acc[x.code]||'')}</div>${alertBadge(x.code)}<div class="cd">${x.code}${x.f?` · <span title="สูตรเดิมในไฟล์">สูตร ${esc(x.f)}</span>`:''}</div></td>
     <td class="amt">${fmt2.format(x.orig)}</td>
     <td class="inp"><input type="text" inputmode="decimal" aria-label="จำนวนเงินใหม่ แถว ${x.r}" value="${inVal(v)}"></td>
     <td class="amt diff">${ed?((v-x.orig>0?'+':'')+fmt2.format(v-x.orig)):''}</td>
@@ -1029,7 +1100,7 @@ function editAggCells(o, codes, sign=()=>1){
 function editGroupHTML(g, open){
   const kids=g.codes.flatMap(c=>st.rows5.filter(x=>x.code===c)), sg=c=>sgn(g,c);
   const o=sumRowsVals(kids, sg), ed=kids.some(x=>x.r in st.edits);
-  return `<tr class="grow egrow${open?' open':''}${ed?' edited':''}" data-eg="${g.id}"><td></td><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.codes.length} บัญชีย่อย${g.neg?' · มีรายการหัก':''}</div></td>${editAggCells(o, g.codes, sg)}</tr>`;
+  return `<tr class="grow egrow${open?' open':''}${ed?' edited':''}${alertCls('G:'+g.id)}" data-eg="${g.id}"><td></td><td class="nm l" tabindex="0" role="button" aria-expanded="${open}"><div class="n"><span class="caret">▸</span><span>${esc(g.name)}</span></div><div class="cd">${g.codes.length} บัญชีย่อย${g.neg?' · มีรายการหัก':''}</div>${alertBadge('G:'+g.id)}</td>${editAggCells(o, g.codes, sg)}</tr>`;
 }
 function editSecHTML(pre, excl){
   const rows=st.rows5.filter(x=>x.code[0]===pre), o=sumRowsVals(rows), codes=[...new Set(rows.map(x=>x.code))];
@@ -1265,6 +1336,13 @@ document.querySelectorAll('#eseg button').forEach(b=>b.addEventListener('click',
 let eqt; $('#eq').addEventListener('input',e=>{ clearTimeout(eqt); eqt=setTimeout(()=>{ st.eq=e.target.value.trim(); renderEdit(); },150); });
 $('#eonly').addEventListener('change',e=>{ st.eonly=e.target.checked; renderEdit(); });
 $('#ezero').addEventListener('change',e=>{ st.ezero=e.target.checked; renderEdit(); });
+const FS=[0.85,0.92,1,1.1,1.2,1.35,1.5,1.7];
+let fsi=2; try{ const s=parseInt(localStorage.getItem('pf70-fs')); if(FS[s]) fsi=s; }catch(e){}
+function applyFs(){ document.documentElement.style.setProperty('--tz', FS[fsi]); $('#fsrs').textContent=Math.round(FS[fsi]*100)+'%'; $('#fsdn').disabled=fsi===0; $('#fsup').disabled=fsi===FS.length-1; try{ localStorage.setItem('pf70-fs', fsi); }catch(e){} }
+$('#fsdn').addEventListener('click',()=>{ if(fsi>0){fsi--;applyFs();} });
+$('#fsup').addEventListener('click',()=>{ if(fsi<FS.length-1){fsi++;applyFs();} });
+$('#fsrs').addEventListener('click',()=>{ fsi=2; applyFs(); });
+applyFs();
 $('#copy').addEventListener('click',async ()=>{
   const p = c => c.p!=null ? c.p.toFixed(2) : (c.k==='new'?'ใหม่':'');
   const lbl = st.stat==='median'?'มัธยฐาน':'เฉลี่ย';
