@@ -247,6 +247,8 @@ tr.estrow td.amt.plan{font-style:italic}
 .etab td.rsn textarea.miss{border-color:var(--down-strong);background:color-mix(in srgb,var(--down-bg) 50%,var(--surface))}
 .etab td.rsn textarea:focus{outline:2px solid var(--accent);outline-offset:0}
 .etab td.hist{color:var(--muted)}
+.etab.h2569 .ey2569,.etab.h2568 .ey2568,.etab.h2567 .ey2567{display:none}
+.eyears{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:500}
 .etab td.diff{color:var(--warn-ink);font-weight:600}
 .tabs .expbar .btn{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;margin:0;padding:6px 12px}
 .tabs .expbar .btn.exp{border-color:var(--accent);color:var(--accent)}
@@ -448,6 +450,7 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
     <div class="bar" role="toolbar" aria-label="ตัวกรองบรรทัด">
       <div class="seg" id="eseg"><button type="button" data-v="all" aria-pressed="true">ทั้งหมด</button><button type="button" data-v="G" aria-pressed="false">หัวข้อรวม</button><button type="button" data-v="4" aria-pressed="false">รายได้ (4)</button><button type="button" data-v="5" aria-pressed="false">ค่าใช้จ่าย (5)</button><button type="button" data-v="file" aria-pressed="false">ตามลำดับในไฟล์</button></div>
       <button class="btn" type="button" id="eexpand">ขยายหัวข้อรวมทั้งหมด</button>
+      <div class="eyears" role="group" aria-label="แสดงงบทดลองปีที่ผ่านมา"><span>แสดงงบทดลอง</span><button type="button" class="tg ey" data-ey="2569" aria-pressed="true">2569</button><button type="button" class="tg ey" data-ey="2568" aria-pressed="true">2568</button><button type="button" class="tg ey" data-ey="2567" aria-pressed="false">2567</button></div>
       <label class="fld grow" for="eq">ค้นหารหัส / ชื่อบัญชี<input type="search" id="eq" placeholder="เช่น 4301020105 หรือ ค่าตอบแทน"></label>
       <label class="chk" for="eonly"><input type="checkbox" id="eonly"> เฉพาะบรรทัดที่แก้</label>
       <label class="chk" for="eneed"><input type="checkbox" id="eneed"> เฉพาะบรรทัดที่เปลี่ยนเกินเกณฑ์</label>
@@ -455,7 +458,7 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
       <label class="chk" for="ezero"><input type="checkbox" id="ezero" checked> ซ่อนบรรทัดที่เป็น 0 ทุกปี</label>
       <span class="counts" id="ecount"></span>
     </div>
-    <div class="tablebox"><table class="etab"><thead><tr class="cols"><th>แถว</th><th class="l stk">ชื่อบัญชี / รหัส</th><th>ค่าในไฟล์</th><th class="plan">ค่าใหม่ (พิมพ์แก้)</th><th>ส่วนต่าง</th><th>งบทดลอง 2569</th><th>%Δ</th><th>งบทดลอง 2568</th><th>%Δ</th><th>งบทดลอง 2567</th><th>%Δ</th><th class="l">เหตุผล ไม่บังคับ (แสดงเมื่อเปลี่ยน &gt; ±<span id="rthrlbl">10</span>% จากปี 2569)</th><th></th></tr></thead><tbody id="etb"></tbody></table></div>
+    <div class="tablebox"><table class="etab h2567" id="etable"><thead><tr class="cols"><th>แถว</th><th class="l stk">ชื่อบัญชี / รหัส</th><th>ค่าในไฟล์</th><th class="plan">ค่าใหม่ (พิมพ์แก้)</th><th>ส่วนต่าง</th><th class="ey2569">งบทดลอง 2569</th><th class="ey2569">%Δ</th><th class="ey2568">งบทดลอง 2568</th><th class="ey2568">%Δ</th><th class="ey2567">งบทดลอง 2567</th><th class="ey2567">%Δ</th><th class="l">เหตุผล ไม่บังคับ (แสดงเมื่อเปลี่ยน &gt; ±<span id="rthrlbl">10</span>% จากปี 2569)</th><th></th></tr></thead><tbody id="etb"></tbody></table></div>
   </section>
 
   <section id="view-bal" class="balwrap" hidden aria-labelledby="balh">
@@ -595,7 +598,7 @@ const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 const short = n => String(n||'').replace('โรงพยาบาล','รพ.');
 
 const st = {plan:null, planHosp:null, planName:'', planFile:'', planNames:{}, isSample:false, hosp:null, warn:'',
-  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, relopen:new Set(), edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eopen:new Set(), eonly:false, ezero:true, etype:'all', ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
+  type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, relopen:new Set(), edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eopen:new Set(), eonly:false, ezero:true, etype:'all', ehide:{'2567':true}, ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
   pby:'level', pick:[], popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
 let PEER = {list:[], v:{}, tot:{}};
 
@@ -1202,7 +1205,7 @@ function editRowHTML(x, extra=''){
     <td class="amt">${fmt2.format(x.orig)}</td>
     <td class="inp"><input type="text" inputmode="decimal" aria-label="จำนวนเงินใหม่ แถว ${x.r}" value="${inVal(v)}"></td>
     <td class="amt diff">${ed?((v-x.orig>0?'+':'')+fmt2.format(v-x.orig)):''}</td>
-    ${YEARS.map(y=>{const h=hy(y);return `<td class="amt hist">${h==null?'–':fmt.format(h)}</td><td class="pc">${pillHTML(pct(v,h))}</td>`}).join('')}
+    ${YEARS.map(y=>{const h=hy(y);return `<td class="amt hist ey${y}">${h==null?'–':fmt.format(h)}</td><td class="pc ey${y}">${pillHTML(pct(v,h))}</td>`}).join('')}
     <td class="rsn">${needsReason(x)?`<textarea rows="2" aria-label="เหตุผล แถว ${x.r}" placeholder="เหตุผล (ไม่บังคับ)">${esc(st.reasons[x.r]||'')}</textarea>`:'<span class="cd">–</span>'}${x.note?`<div class="cd" title="หมายเหตุเดิมในคอลัมน์ D">หมายเหตุเดิม: ${esc(x.note)}</div>`:''}</td>
     <td>${ed?'<button type="button" class="lnk undo" title="คืนค่าเดิม">คืนค่า</button>':''}</td></tr>`;
 }
@@ -1217,7 +1220,8 @@ function renderEdit(){
     if(st.ezero && !x.orig && !(x.r in st.edits) && !YEARS.some(y=>TB.y[y][st.hosp]&&hist(y,x.code))) return false;
     if(q && !x.code.includes(q) && !String(x.name||'').toLowerCase().includes(q)) return false;
     return true; };
-  const empty = `<tr><td colspan="13" class="empty">ไม่มีบรรทัดที่ตรงกับตัวกรอง</td></tr>`;
+  const ecols = 13 - 2*YEARS.filter(y=>st.ehide[y]).length;
+  const empty = `<tr><td colspan="${ecols}" class="empty">ไม่มีบรรทัดที่ตรงกับตัวกรอง</td></tr>`;
   const mode=st.etype; let html='', shown=0;
   if(mode==='file' || mode==='4' || mode==='5'){
     const rows=st.rows5.filter(x=>(mode==='file'||x.code[0]===mode) && pass(x)); shown=rows.length;
@@ -1244,7 +1248,7 @@ function renderEdit(){
         else if(open) gh += (filt && !nameHit ? vis : kids).map(x=>editRowHTML(x,'kid')).join('');
         shown += vis.length;
       });
-      if(gh) html += `<tr class="gsec"><td class="l nm" colspan="2">หัวข้อรวม · ${pre==='4'?'รายได้ (หมวด 4)':'ค่าใช้จ่าย (หมวด 5)'}</td><td colspan="11"></td></tr>` + gh;
+      if(gh) html += `<tr class="gsec"><td class="l nm" colspan="2">หัวข้อรวม · ${pre==='4'?'รายได้ (หมวด 4)':'ค่าใช้จ่าย (หมวด 5)'}</td><td colspan="${ecols-2}"></td></tr>` + gh;
     });
     if(mode==='all') ['4','5'].forEach(pre=>{
       const rows=st.rows5.filter(x=>x.code[0]===pre && !grouped.has(x.code) && pass(x)); shown+=rows.length;
@@ -1253,6 +1257,7 @@ function renderEdit(){
   }
   $('#ecount').textContent = `แสดง ${shown} จาก ${st.rows5.length} บรรทัด`;
   $('#etb').innerHTML = html || empty;
+  YEARS.forEach(y=>$('#etable').classList.toggle('h'+y, !!st.ehide[y]));
 }
 function sumRowsVals(rows, sign=()=>1){
   const o={orig:0, cur:0, h:{}};
@@ -1262,7 +1267,7 @@ function sumRowsVals(rows, sign=()=>1){
 function editAggCells(o, codes, sign=()=>1){
   const hv = y => TB.y[y][st.hosp] ? codes.reduce((a,c)=>a+sign(c)*hist(y,c),0) : null;
   return `<td class="amt">${fmt2.format(o.orig)}</td><td class="amt plan">${fmt2.format(o.cur)}</td><td class="amt diff">${Math.abs(o.cur-o.orig)>=0.005?((o.cur-o.orig>0?'+':'')+fmt2.format(o.cur-o.orig)):''}</td>`
-    + YEARS.map(y=>{ const h=hv(y); return `<td class="amt hist">${h==null?'–':fmt.format(h)}</td><td class="pc">${pillHTML(pct(o.cur,h))}</td>`; }).join('') + '<td></td><td></td>';
+    + YEARS.map(y=>{ const h=hv(y); return `<td class="amt hist ey${y}">${h==null?'–':fmt.format(h)}</td><td class="pc ey${y}">${pillHTML(pct(o.cur,h))}</td>`; }).join('') + '<td></td><td></td>';
 }
 function editGroupHTML(g, open, extra=''){
   const kids=g.codes.flatMap(c=>st.rows5.filter(x=>x.code===c)), sg=c=>sgn(g,c);
@@ -1285,7 +1290,7 @@ function editEstHTML(){
   const hv=y=>TB.y[y][st.hosp] ? g.codes.reduce((a,c)=>a+hist(y,c),0) : null, c=pct(cur,e);
   return `<tr class="estrow${ALERTS['G:ucip']?' warnrow':''}" data-eest="1"><td></td><td class="nm l"><div class="n">ประมาณการจากผลงานปี 69 × อัตราใหม่</div><div class="cd">อัตราในเขต ${fmt.format(st.ucRate)} บาท/AdjRW · ค่าใหม่ของหัวข้อ${c.k==='up'?'สูงกว่า':c.k==='down'?'ต่ำกว่า':'เท่ากับ'}ประมาณการ ${pillHTML(c)}</div></td>
     <td></td><td class="amt plan" title="ค่าประมาณการ">${fmt2.format(e)}</td><td class="amt diff" title="ค่าใหม่ของหัวข้อ − ประมาณการ">${(cur-e>0?'+':'')+fmt2.format(cur-e)}</td>
-    ${YEARS.map(y=>{const h=hv(y);return `<td></td><td class="pc" title="ประมาณการเทียบงบทดลอง ${y}">${pillHTML(pct(e,h))}</td>`}).join('')}<td></td><td></td></tr>`;
+    ${YEARS.map(y=>{const h=hv(y);return `<td class="ey${y}"></td><td class="pc ey${y}" title="ประมาณการเทียบงบทดลอง ${y}">${pillHTML(pct(e,h))}</td>`}).join('')}<td></td><td></td></tr>`;
 }
 function toggleEditGroup(id){ st.eopen.has(id)?st.eopen.delete(id):st.eopen.add(id); renderEdit(); const n=document.querySelector(`#etb tr[data-eg="${id}"] td.nm`); if(n) n.focus(); }
 function applyEdit(r, raw){
@@ -1477,8 +1482,9 @@ $('#pchips').addEventListener('click',e=>{ const b=e.target.closest('button[data
 $('#popon').addEventListener('change',e=>{st.popOn=e.target.checked;render();});
 $('#pself').addEventListener('change',e=>{st.pself=e.target.checked;render();});
 let pt; $('#ppct').addEventListener('input',e=>{ clearTimeout(pt); pt=setTimeout(()=>{ const v=+e.target.value; if(v>0){st.popPct=v;render();} },250); });
-function syncCols(){ document.querySelectorAll('.tg').forEach(b=>b.setAttribute('aria-pressed', !!st.cols[b.dataset.c])); }
-document.querySelectorAll('.tg').forEach(b=>b.addEventListener('click',()=>{ st.cols[b.dataset.c]=!st.cols[b.dataset.c]; syncCols(); render(); }));
+document.querySelectorAll('.tg.ey').forEach(b=>b.addEventListener('click',()=>{ const y=b.dataset.ey; st.ehide[y]=!st.ehide[y]; b.setAttribute('aria-pressed',!st.ehide[y]); renderEdit(); }));
+function syncCols(){ document.querySelectorAll('.tg[data-c]').forEach(b=>b.setAttribute('aria-pressed', !!st.cols[b.dataset.c])); }
+document.querySelectorAll('.tg[data-c]').forEach(b=>b.addEventListener('click',()=>{ st.cols[b.dataset.c]=!st.cols[b.dataset.c]; syncCols(); render(); }));
 document.querySelectorAll('.lnk[data-all]').forEach(b=>b.addEventListener('click',()=>{
   const k=b.dataset.all, on=!YEARS.every(y=>st.cols[k+y]); YEARS.forEach(y=>st.cols[k+y]=on); syncCols(); render(); }));
 function toggleG(id){ st.open.has(id)?st.open.delete(id):st.open.add(id); render(); }
