@@ -245,6 +245,8 @@ tr.estrow td.amt.plan{font-style:italic}
 .etab td.rsn{min-width:240px;text-align:left}
 .etab td.rsn textarea{font:inherit;font-size:13px;width:100%;resize:vertical;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
 .etab td.rsn textarea.miss{border-color:var(--down-strong);background:color-mix(in srgb,var(--down-bg) 50%,var(--surface))}
+.etab td.rsn textarea.need{border-color:var(--down-strong)}
+.etab td.rsn textarea:not(.need):not(:focus){background:transparent}
 .etab td.rsn textarea:focus{outline:2px solid var(--accent);outline-offset:0}
 .etab td.hist{color:var(--muted)}
 .etab.h2569 .ey2569,.etab.h2568 .ey2568,.etab.h2567 .ey2567{display:none}
@@ -454,11 +456,11 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
       <label class="fld grow" for="eq">ค้นหารหัส / ชื่อบัญชี<input type="search" id="eq" placeholder="เช่น 4301020105 หรือ ค่าตอบแทน"></label>
       <label class="chk" for="eonly"><input type="checkbox" id="eonly"> เฉพาะบรรทัดที่แก้</label>
       <label class="chk" for="eneed"><input type="checkbox" id="eneed"> เฉพาะบรรทัดที่เปลี่ยนเกินเกณฑ์</label>
-      <label class="fld" for="rthr">แสดงช่องเหตุผลเมื่อเปลี่ยนเกิน ± (%)<input type="number" id="rthr" min="0" step="any" value="10" class="tol" style="width:90px"></label>
+      <label class="fld" for="rthr">เน้นช่องเหตุผลเมื่อเปลี่ยนเกิน ± (%)<input type="number" id="rthr" min="0" step="any" value="10" class="tol" style="width:90px"></label>
       <label class="chk" for="ezero"><input type="checkbox" id="ezero" checked> ซ่อนบรรทัดที่เป็น 0 ทุกปี</label>
       <span class="counts" id="ecount"></span>
     </div>
-    <div class="tablebox"><table class="etab h2567" id="etable"><thead><tr class="cols"><th>แถว</th><th class="l stk">ชื่อบัญชี / รหัส</th><th>ค่าในไฟล์</th><th class="plan">ค่าใหม่ (พิมพ์แก้)</th><th>ส่วนต่าง</th><th class="ey2569">งบทดลอง 2569</th><th class="ey2569">%Δ</th><th class="ey2568">งบทดลอง 2568</th><th class="ey2568">%Δ</th><th class="ey2567">งบทดลอง 2567</th><th class="ey2567">%Δ</th><th class="l">เหตุผล ไม่บังคับ (แสดงเมื่อเปลี่ยน &gt; ±<span id="rthrlbl">10</span>% จากปี 2569)</th><th></th></tr></thead><tbody id="etb"></tbody></table></div>
+    <div class="tablebox"><table class="etab h2567" id="etable"><thead><tr class="cols"><th>แถว</th><th class="l stk">ชื่อบัญชี / รหัส</th><th>ค่าในไฟล์</th><th class="plan">ค่าใหม่ (พิมพ์แก้)</th><th>ส่วนต่าง</th><th class="ey2569">งบทดลอง 2569</th><th class="ey2569">%Δ</th><th class="ey2568">งบทดลอง 2568</th><th class="ey2568">%Δ</th><th class="ey2567">งบทดลอง 2567</th><th class="ey2567">%Δ</th><th class="l">เหตุผล (ไม่บังคับ · ใส่ได้ทุกบรรทัด · กรอบส้ม = เปลี่ยน &gt; ±<span id="rthrlbl">10</span>% จากปี 2569)</th><th></th></tr></thead><tbody id="etb"></tbody></table></div>
   </section>
 
   <section id="view-bal" class="balwrap" hidden aria-labelledby="balh">
@@ -1020,8 +1022,8 @@ function exportExcel(){
   }
   { const ks=Object.keys(ALERTS); const a6=[...metaRows('รายการที่ควรทบทวน (ตามเกณฑ์ตรวจทาน)'),['รายการ','ผลตรวจ','รายละเอียด']]; ks.forEach(k=>a6.push([ALERTS[k].name,ALERTS[k].msg,ALERTS[k].why])); if(!ks.length) a6.push(['ไม่พบรายการผิดปกติ']); XLSX.utils.book_append_sheet(wb, sheetFrom(a6,[50,30,50]), 'รายการต้องทบทวน'); }
   if(st.rows5){
-    const a5=[...metaRows(`เหตุผลการปรับแผน (เปลี่ยนเกิน ±${st.rthr}% จากงบทดลองปี 2569)`), ['แถวในไฟล์','รหัส','ชื่อบัญชี','ค่าในไฟล์','ค่าใหม่','งบทดลอง 2569','%Δ เทียบ 2569','แก้ไขบนเว็บ','เหตุผล','หมายเหตุเดิม']];
-    st.rows5.filter(needsReason).forEach(x=>{ const h=hist('2569',x.code), v=curVal(x); a5.push([x.r,x.code,x.name||TB.acc[x.code]||'',r2(x.orig),r2(v),r2(h),pctNum(pct(v,h)), x.r in st.edits?'แก้':'', st.reasons[x.r]||'', x.note||'']); });
+    const a5=[...metaRows(`เหตุผลการปรับแผน (บรรทัดที่ใส่เหตุผล และบรรทัดที่เปลี่ยนเกิน ±${st.rthr}% จากงบทดลองปี 2569)`), ['แถวในไฟล์','รหัส','ชื่อบัญชี','ค่าในไฟล์','ค่าใหม่','งบทดลอง 2569','%Δ เทียบ 2569','แก้ไขบนเว็บ','เหตุผล','หมายเหตุเดิม']];
+    st.rows5.filter(x=>needsReason(x)||(st.reasons[x.r]||'').trim()).forEach(x=>{ const h=hist('2569',x.code), v=curVal(x); a5.push([x.r,x.code,x.name||TB.acc[x.code]||'',r2(x.orig),r2(v),r2(h),pctNum(pct(v,h)), x.r in st.edits?'แก้':'', st.reasons[x.r]||'', x.note||'']); });
     XLSX.utils.book_append_sheet(wb, sheetFrom(a5,[8,16,50,16,16,16,12,10,50,30]), 'เหตุผลการปรับแผน');
   }
   const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
@@ -1062,7 +1064,7 @@ async function exportTbPdf(){
   const sum=(pre,useNew)=>st.rows5.filter(x=>x.code[0]===pre).reduce((a,x)=>a+(useNew?curVal(x):x.orig),0);
   const r0=sum('4',0), r1=sum('4',1), e0=sum('5',0), e1=sum('5',1);
   const f2=v=>fmt2.format(v), dif=(a,b)=>Math.abs(b-a)<0.005?'':((b-a>0?'+':'')+fmt2.format(b-a));
-  const rows=st.rows5.filter(x=>x.orig || curVal(x) || x.r in st.edits);
+  const rows=st.rows5.filter(x=>x.orig || curVal(x) || x.r in st.edits || (st.reasons[x.r]||'').trim());
   const tr=x=>{ const ed=x.r in st.edits, v=curVal(x), rs=(st.reasons[x.r]||'').trim();
     return `<tr class="${ed?'ed':''}"><td class="c">${x.r}</td><td class="mono">${x.code}</td><td>${esc(x.name||TB.acc[x.code]||'')}</td><td class="n">${f2(x.orig)}</td><td class="n b">${f2(v)}</td><td class="n d">${ed?dif(x.orig,v):''}</td><td class="rs">${esc(rs)}</td></tr>`; };
   const tot=(lbl,a,b)=>`<tr class="tot"><td></td><td></td><td>${lbl}</td><td class="n">${f2(a)}</td><td class="n b">${f2(b)}</td><td class="n d">${dif(a,b)}</td><td></td></tr>`;
@@ -1205,7 +1207,7 @@ function editRowHTML(x, extra=''){
     <td class="inp"><input type="text" inputmode="decimal" aria-label="จำนวนเงินใหม่ แถว ${x.r}" value="${inVal(v)}"></td>
     <td class="amt diff">${ed?((v-x.orig>0?'+':'')+fmt2.format(v-x.orig)):''}</td>
     ${YEARS.map(y=>{const h=hy(y);return `<td class="amt hist ey${y}">${h==null?'–':fmt.format(h)}</td><td class="pc ey${y}">${pillHTML(pct(v,h))}</td>`}).join('')}
-    <td class="rsn">${needsReason(x)?`<textarea rows="2" aria-label="เหตุผล แถว ${x.r}" placeholder="เหตุผล (ไม่บังคับ)">${esc(st.reasons[x.r]||'')}</textarea>`:'<span class="cd">–</span>'}${x.note?`<div class="cd" title="หมายเหตุเดิมในคอลัมน์ D">หมายเหตุเดิม: ${esc(x.note)}</div>`:''}</td>
+    <td class="rsn"><textarea rows="${needsReason(x)?2:1}" class="${needsReason(x)?'need':''}" aria-label="เหตุผล แถว ${x.r}" placeholder="${needsReason(x)?'เปลี่ยนเกินเกณฑ์ · ใส่เหตุผล (ไม่บังคับ)':'เหตุผล (ไม่บังคับ)'}">${esc(st.reasons[x.r]||'')}</textarea>${x.note?`<div class="cd" title="หมายเหตุเดิมในคอลัมน์ D">หมายเหตุเดิม: ${esc(x.note)}</div>`:''}</td>
     <td>${ed?'<button type="button" class="lnk undo" title="คืนค่าเดิม">คืนค่า</button>':''}</td></tr>`;
 }
 function editRelRows(key){ return st.relopen.has(key) && REL[key] ? REL[key].flatMap(c=>st.rows5.filter(x=>x.code===c)).map(x=>editRowHTML(x,'relrow')).join('') : ''; }
@@ -1322,7 +1324,7 @@ async function exportEdited(){
     const hl = stx ? makeHighlightStyles(stx) : null;
     const edited=new Set(Object.keys(st.edits).map(Number));
     let {xml, missing}=patchSheetXml(sx, all, 'C', hl ? (r=>edited.has(r) ? hl.map : null) : null);
-    const notes={}; st.rows5.forEach(x=>{ const rs=(st.reasons[x.r]||'').trim(); if(rs && needsReason(x)) notes[x.r] = (x.note? x.note+' | ' : '') + 'เหตุผลปรับแผน: '+rs; });
+    const notes={}; st.rows5.forEach(x=>{ const rs=(st.reasons[x.r]||'').trim(); if(rs) notes[x.r] = (x.note? x.note+' | ' : '') + 'เหตุผลปรับแผน: '+rs; });
     if(Object.keys(notes).length){ const p2=patchSheetXml(xml, notes, 'D', hl ? (()=>hl.map) : null); xml=p2.xml; missing=missing.concat(p2.missing); }
     if(hl && hl.finish) zip.file(stylesPath, hl.finish());
     if(missing.length) throw new Error('ไม่พบแถว '+missing.join(', ')+' ในไฟล์');
