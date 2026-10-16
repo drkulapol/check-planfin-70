@@ -59,7 +59,7 @@ header.top .sub{color:var(--muted);font-size:13px}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 label.fld{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
-select,input[type=search]{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 10px;min-width:0;width:100%}
+select,input[type=search],#pin{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 10px;min-width:0;width:100%}
 .hospname{font-family:var(--f-display);font-size:22px;font-weight:600;margin-top:10px}
 .hospmeta{color:var(--muted);font-size:13px}
 
@@ -117,9 +117,22 @@ tr.flag td.nm .n::before{content:"";display:inline-block;width:7px;height:7px;bo
 tr.flag.fup td.nm .n::before{background:var(--up-strong)}
 .peer{display:grid;gap:12px}
 .peer h2{font-size:17px;font-weight:600}
+.peerhead{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:space-between;align-items:flex-start}
+.btn.pickbtn{font-weight:600;color:var(--peer);border-color:var(--peer);background:var(--peer-soft)}
+.btn.pickbtn:hover{background:var(--peer);color:var(--surface)}
+.btn.pickbtn[aria-pressed="true"]{background:var(--peer);color:var(--surface)}
 .peerctl{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end}
 .peerctl .fld{min-width:0}
 .inl{display:flex;gap:10px;align-items:center}
+.pcustom{display:grid;gap:8px;padding:10px 12px;border:1px dashed color-mix(in srgb,var(--peer) 45%,transparent);border-radius:10px;background:color-mix(in srgb,var(--peer-soft) 45%,transparent)}
+.pcustom .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pcustom input[type=text]{flex:1 1 260px;min-width:0;width:auto}
+.pchips{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;background:var(--surface);border:1px solid color-mix(in srgb,var(--peer) 40%,transparent);color:var(--peer-ink);border-radius:999px;padding:2px 4px 2px 10px}
+.pchip button{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;border-radius:999px;width:20px;height:20px;line-height:1}
+.pchip button:hover{color:var(--down);background:var(--peer-soft)}
+.pmsg{font-size:12.5px;color:var(--muted)}
+.pmsg.err{color:var(--down)}
 .inl input[type=number]{font:inherit;font-family:var(--f-num);width:90px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 10px}
 .peerlist summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:500}
 .plwrap{overflow-x:auto;margin-top:8px}
@@ -340,17 +353,23 @@ footer{color:var(--muted);font-size:12.5px;display:grid;gap:4px}
     <div class="peerhead">
       <div><h2 id="peerh">กลุ่มเปรียบเทียบ (โรงพยาบาลในกลุ่มเดียวกัน เขต 1)</h2>
       <div class="hospmeta" id="peersum"></div></div>
+      <button type="button" class="btn pickbtn" id="pickbtn" aria-pressed="false">＋ เลือกโรงพยาบาลที่จะเทียบเอง</button>
     </div>
     <div class="peerctl">
       <label class="fld" for="pby">จัดกลุ่มตาม
-        <select id="pby"><option value="level">ระดับ (A/S/M1/M2/F1/F2/F3)</option><option value="group">กลุ่มระดับบริการ (ระดับ + ช่วงประชากร/เตียง)</option><option value="all">ทุกระดับในเขต 1</option></select></label>
-      <label class="fld" for="ppct">ประชากร UC ต่างไม่เกิน ± (%)
+        <select id="pby"><option value="level">ระดับ (A/S/M1/M2/F1/F2/F3)</option><option value="group">กลุ่มระดับบริการ (ระดับ + ช่วงประชากร/เตียง)</option><option value="all">ทุกระดับในเขต 1</option><option value="custom">เลือกโรงพยาบาลเอง (ระบุรหัส/ชื่อ)</option></select></label>
+      <label class="fld" for="ppct" id="ppctfld">ประชากร UC ต่างไม่เกิน ± (%)
         <span class="inl"><input type="number" id="ppct" min="1" max="1000" step="1" value="50"><label class="chk" for="popon" style="padding:0"><input type="checkbox" id="popon" checked> ใช้เงื่อนไขนี้</label></span></label>
       <div class="fld"><span>สถิติที่ใช้</span>
         <div class="seg" id="pstat"><button type="button" data-v="median" aria-pressed="true">มัธยฐาน</button><button type="button" data-v="mean" aria-pressed="false">ค่าเฉลี่ย</button></div></div>
       <div class="fld"><span>หน่วยของค่ากลาง</span>
         <div class="seg" id="pscale"><button type="button" data-v="raw" aria-pressed="true">บาทจริง</button><button type="button" data-v="pop" aria-pressed="false">ปรับตาม POP UC ของ รพ.นี้</button></div></div>
       <label class="chk" for="pself"><input type="checkbox" id="pself"> นับ รพ.ตัวเองในกลุ่มด้วย</label>
+    </div>
+    <div class="pcustom" id="pcustom" hidden>
+      <div class="row"><input type="text" id="pin" list="pdl" placeholder="พิมพ์รหัสสถานพยาบาล หรือชื่อ รพ. (ใส่หลายแห่งคั่นด้วย , ได้) แล้วกด Enter" aria-label="เพิ่มโรงพยาบาลที่ต้องการเทียบ" autocomplete="off"><datalist id="pdl"></datalist>
+      <button type="button" class="btn" id="padd">เพิ่ม</button><button type="button" class="btn" id="pclr">ล้างทั้งหมด</button></div>
+      <div class="pchips" id="pchips"></div><div class="pmsg" id="pmsg" aria-live="polite"></div>
     </div>
     <details class="peerlist"><summary id="peerlistsum">รายชื่อโรงพยาบาลในกลุ่ม</summary><div class="plwrap"><table class="pl"><thead><tr><th class="l">โรงพยาบาล</th><th class="l">จังหวัด</th><th class="l">ระดับ</th><th class="l">กลุ่มระดับบริการ</th><th>เตียง</th><th>POP UC (1 เม.ย.68)</th><th>ต่างจาก รพ.นี้</th></tr></thead><tbody id="peerrows"></tbody></table></div></details>
   </section>
@@ -577,7 +596,7 @@ const short = n => String(n||'').replace('โรงพยาบาล','รพ.'
 
 const st = {plan:null, planHosp:null, planName:'', planFile:'', planNames:{}, isSample:false, hosp:null, warn:'',
   type:'all', q:'', base:'o2569', thr:20, sort:'code', onlyflag:false, hidezero:true, tol:1, relopen:new Set(), edits:{}, reasons:{}, rthr:10, eneed:false, rows5:null, buf:null, sheet5:'', eq:'', eopen:new Set(), eonly:false, ezero:true, etype:'all', ucRate:5119, popen:new Set(), cols:{o2569:true,o2568:true,o2567:true,p2569:false,p2568:false,p2567:false}, open:new Set(),
-  pby:'level', popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
+  pby:'level', pick:[], popOn:true, popPct:50, stat:'median', scale:'raw', pself:false};
 let PEER = {list:[], v:{}, tot:{}};
 
 // ---------- hospital dropdown ----------
@@ -590,6 +609,7 @@ let PEER = {list:[], v:{}, tot:{}};
 
 // ---------- peer group ----------
 function peerList(){
+  if(st.pby==='custom') return st.pick.filter(c=>c!==st.hosp || st.pself).concat(st.pself && !st.pick.includes(st.hosp) ? [st.hosp] : []);
   const me = SVC[st.hosp]; if(!me) return [];
   return Object.keys(SVC).filter(c=>{
     if(c===st.hosp) return st.pself;
@@ -612,7 +632,7 @@ function computePeers(){
   YEARS.forEach(y=>{
     const pool = list.filter(c=>TB.y[y][c]);   // hospitals with a trial balance that year
     n[y]=pool.length;
-    const f = c => st.scale==='pop' ? (SVC[c][3] ? mePop/SVC[c][3] : 0) : 1;
+    const f = c => st.scale==='pop' ? (SVC[c]?.[3] ? mePop/SVC[c][3] : 0) : 1;
     const codes = new Set(); pool.forEach(c=>Object.keys(TB.y[y][c]).forEach(k=>codes.add(k)));
     v[y]={};
     codes.forEach(k=>{ v[y][k]=stat(pool.map(c=>(TB.y[y][c][k]||0)*f(c))); });
@@ -628,17 +648,47 @@ function computePeers(){
 function renderPeerPanel(){
   const me=SVC[st.hosp];
   const lbl = st.stat==='median'?'มัธยฐาน':'ค่าเฉลี่ย';
-  if(!me){ $('#peersum').textContent='ไม่มีข้อมูลหน่วยบริการของ รพ.นี้'; $('#peerrows').innerHTML=''; return; }
-  const crit = (st.pby==='level'?`ระดับ ${me[0]}`:st.pby==='group'?`กลุ่ม ${me[1]}`:'ทุกระดับ') +
+  const cu = st.pby==='custom';
+  $('#pcustom').hidden=!cu; $('#ppctfld').hidden=cu; renderPick(); $('#pby').value=st.pby;
+  $('#pickbtn').setAttribute('aria-pressed',cu); $('#pickbtn').textContent = cu ? '✓ กำลังใช้โรงพยาบาลที่เลือกเอง (กดเพื่อกลับไปจัดกลุ่มตามระดับ)' : '＋ เลือกโรงพยาบาลที่จะเทียบเอง';
+  if(!me && !cu){ $('#peersum').textContent='ไม่มีข้อมูลหน่วยบริการของ รพ.นี้'; $('#peerrows').innerHTML=''; return; }
+  const crit = cu ? 'เลือกโรงพยาบาลเอง: '+(st.pick.filter(c=>c!==st.hosp).map(c=>short(TB.hosp[c][0])).join(', ')||'–') : (st.pby==='level'?`ระดับ ${me[0]}`:st.pby==='group'?`กลุ่ม ${me[1]}`:'ทุกระดับ') +
     (st.popOn?` · POP UC ${fmt.format(me[3]*(1-st.popPct/100))}–${fmt.format(me[3]*(1+st.popPct/100))}`:'');
   const n=PEER.list.length;
-  $('#peersum').innerHTML = `${esc(short(TB.hosp[st.hosp][0]))}: ระดับ <b>${esc(me[0])}</b> · ${esc(me[1])} · ${fmt.format(me[2])} เตียง · POP UC ${fmt.format(me[3])}<br>เงื่อนไข: ${esc(crit)} → <b>${n}</b> โรงพยาบาล · ใช้${lbl}${st.scale==='pop'?' (ปรับตาม POP UC)':''}`+
-    (n<3?` · <span style="color:var(--down)">กลุ่มเล็กเกินไป ค่ากลางอาจไม่น่าเชื่อถือ ลองขยายช่วง % หรือเปลี่ยนการจัดกลุ่ม</span>`:'');
+  $('#peersum').innerHTML = `${esc(short(TB.hosp[st.hosp][0]))}: `+(me?`ระดับ <b>${esc(me[0])}</b> · ${esc(me[1])} · ${fmt.format(me[2])} เตียง · POP UC ${fmt.format(me[3])}`:'ไม่มีข้อมูลหน่วยบริการ')+`<br>เงื่อนไข: ${esc(crit)} → <b>${n}</b> โรงพยาบาล · ใช้${lbl}${st.scale==='pop'?' (ปรับตาม POP UC)':''}`+
+    (cu&&!n?` · <span style="color:var(--down)">ยังไม่ได้เลือกโรงพยาบาล</span>`:n&&n<3?` · <span style="color:var(--down)">กลุ่มเล็กเกินไป ค่ากลางอาจไม่น่าเชื่อถือ ${cu?'ควรเลือกอย่างน้อย 3 แห่ง':'ลองขยายช่วง % หรือเปลี่ยนการจัดกลุ่ม'}</span>`:'');
   $('#peerlistsum').textContent = `รายชื่อโรงพยาบาลในกลุ่ม (${n})`;
-  const rows=[st.hosp,...PEER.list.filter(c=>c!==st.hosp)].sort((a,b)=>SVC[a][3]-SVC[b][3]);
-  $('#peerrows').innerHTML = rows.map(c=>{const s=SVC[c],me2=c===st.hosp;
-    const d=me[3]?(s[3]-me[3])/me[3]*100:0;
-    return `<tr class="${me2?'me':''}"><td class="l">${esc(short(TB.hosp[c][0]))}${me2?' (รพ.ที่เลือก)':''}</td><td class="l">${esc(TB.hosp[c][1])}</td><td class="l">${esc(s[0])}</td><td class="l">${esc(s[1])}</td><td class="num">${fmt.format(s[2])}</td><td class="num">${fmt.format(s[3])}</td><td class="num">${me2?'–':(d>0?'+':'')+d.toFixed(1)+'%'}</td></tr>`}).join('');
+  const rows=[st.hosp,...PEER.list.filter(c=>c!==st.hosp)].sort((a,b)=>(SVC[a]?.[3]||0)-(SVC[b]?.[3]||0));
+  $('#peerrows').innerHTML = rows.map(c=>{const s=SVC[c]||['–','–',0,0],me2=c===st.hosp;
+    const d=me&&me[3]?(s[3]-me[3])/me[3]*100:0;
+    return `<tr class="${me2?'me':''}"><td class="l">${esc(short(TB.hosp[c][0]))} (${c})${me2?' (รพ.ที่เลือก)':''}</td><td class="l">${esc(TB.hosp[c][1])}</td><td class="l">${esc(s[0])}</td><td class="l">${esc(s[1])}</td><td class="num">${fmt.format(s[2])}</td><td class="num">${fmt.format(s[3])}</td><td class="num">${me2||!me?'–':(d>0?'+':'')+d.toFixed(1)+'%'}</td></tr>`}).join('');
+}
+// ---------- custom peer picks ----------
+const normName = s => String(s||'').replace(/โรงพยาบาล|รพ\.?|สมเด็จพระยุพราช|\s/g,'').toLowerCase();
+(function fillPdl(){ $('#pdl').innerHTML = Object.entries(TB.hosp).map(([c,[n,p]])=>`<option value="${c} ${esc(short(n))}">${esc(p)}${SVC[c]?' · '+esc(SVC[c][0]):''}</option>`).join(''); })();
+function findHosp(tok){
+  tok=tok.trim(); if(!tok) return {};
+  const m=tok.match(/^0*(\d{4,5})\b/); if(m){ const c=m[1].padStart(5,'0'); if(TB.hosp[c]) return {c}; if(TB.hosp[m[1]]) return {c:m[1]}; return {err:`ไม่พบรหัส ${m[1]}`}; }
+  const q=normName(tok); if(!q) return {};
+  const all=Object.entries(TB.hosp), ex=all.filter(([c,[n]])=>normName(n)===q);
+  if(ex.length===1) return {c:ex[0][0]};
+  const hit=all.filter(([c,[n]])=>normName(n).includes(q));
+  if(hit.length===1) return {c:hit[0][0]};
+  if(!hit.length) return {err:`ไม่พบ "${tok}"`};
+  return {err:`"${tok}" ตรงหลายแห่ง: ${hit.slice(0,6).map(([c,[n]])=>short(n)+' ('+c+')').join(', ')}${hit.length>6?' …':''}`};
+}
+function addPicks(text){
+  const errs=[], added=[], bad=[];
+  String(text).split(/[,;\n]+/).forEach(tok=>{ const r=findHosp(tok); if(r.err){ errs.push(r.err); bad.push(tok.trim()); } else if(r.c){ if(!st.pick.includes(r.c)){ st.pick.push(r.c); added.push(r.c);} } });
+  savePick();
+  const msg=$('#pmsg'); msg.className='pmsg'+(errs.length?' err':'');
+  msg.textContent = errs.length ? errs.join(' · ') : (added.length?`เพิ่ม ${added.length} แห่ง`:'');
+  return bad.join(', ');
+}
+function savePick(){ try{ localStorage.setItem('pf70-peerpick', JSON.stringify(st.pick)); }catch(e){} }
+try{ const p=JSON.parse(localStorage.getItem('pf70-peerpick')||'[]'); if(Array.isArray(p)) st.pick=p.filter(c=>TB.hosp[c]); }catch(e){}
+function renderPick(){
+  $('#pchips').innerHTML = st.pick.length ? st.pick.map(c=>`<span class="pchip">${esc(short(TB.hosp[c][0]))} <small>(${c}${SVC[c]?' · '+esc(SVC[c][0]):''})</small>${c===st.hosp?' <small>= รพ.ที่เลือก</small>':''}<button type="button" data-c="${c}" aria-label="เอาออก ${esc(short(TB.hosp[c][0]))}">×</button></span>`).join('') : '<span class="pmsg">ยังไม่ได้เลือก — พิมพ์รหัสหรือชื่อ รพ. ด้านบน (เลือกจากรายการที่ขึ้นมาได้)</span>';
 }
 
 // ---------- math ----------
@@ -1034,7 +1084,7 @@ async function exportPDF(){
   box.append(head.cloneNode(true), info.cloneNode(true));
   if(view.id!=='view-bal' && view.id!=='view-edit') box.append(document.querySelector('#shared .peer').cloneNode(true));
   const vc=view.cloneNode(true); vc.hidden=false; vc.removeAttribute('id'); box.append(vc);
-  box.querySelectorAll('.bar,.drop,#hosp,.btn,.colpick,.peerctl,.peerlist,details:not([open])').forEach(n=>n.remove());
+  box.querySelectorAll('.bar,.drop,#hosp,.btn,.pickbtn,.colpick,.peerctl,.pcustom,.peerlist,details:not([open])').forEach(n=>n.remove());
   box.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
   document.body.append(box);
   try{
@@ -1415,7 +1465,15 @@ let tt; $('#thr').addEventListener('input',e=>{ clearTimeout(tt); tt=setTimeout(
 $('#sort').addEventListener('change',e=>{st.sort=e.target.value;render();});
 $('#onlyflag').addEventListener('change',e=>{st.onlyflag=e.target.checked;render();});
 $('#hidezero').addEventListener('change',e=>{st.hidezero=e.target.checked;render();});
-$('#pby').addEventListener('change',e=>{st.pby=e.target.value;render();});
+function setPby(v){ st.pby=v; if(v==='custom' && !PY().length){ st.cols.p2569=true; syncCols(); } render(); if(v==='custom') $('#pin').focus(); }
+$('#pby').addEventListener('change',e=>setPby(e.target.value));
+$('#pickbtn').addEventListener('click',()=>setPby(st.pby==='custom'?'level':'custom'));
+function doAdd(){ const i=$('#pin'); if(!i.value.trim()) return; i.value=addPicks(i.value); render(); }
+$('#padd').addEventListener('click',doAdd);
+$('#pin').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); doAdd(); } });
+$('#pin').addEventListener('change',e=>{ if(/^\d{5} /.test(e.target.value)) doAdd(); });
+$('#pclr').addEventListener('click',()=>{ st.pick=[]; savePick(); $('#pmsg').textContent=''; render(); });
+$('#pchips').addEventListener('click',e=>{ const b=e.target.closest('button[data-c]'); if(!b) return; st.pick=st.pick.filter(c=>c!==b.dataset.c); savePick(); render(); });
 $('#popon').addEventListener('change',e=>{st.popOn=e.target.checked;render();});
 $('#pself').addEventListener('change',e=>{st.pself=e.target.checked;render();});
 let pt; $('#ppct').addEventListener('input',e=>{ clearTimeout(pt); pt=setTimeout(()=>{ const v=+e.target.value; if(v>0){st.popPct=v;render();} },250); });
