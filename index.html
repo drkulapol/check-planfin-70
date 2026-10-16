@@ -528,20 +528,19 @@ const UCIP_ITEMS = [['SumAdjRW นอกเขต',10000,0],['SumAdjRW ทาร
 function ucipEst(h){ const d=UCIP[h]; if(!d) return null; return UCIP_ITEMS.reduce((a,[n,rate,i])=>a+d[i]*(rate??st.ucRate),0); }
 // Review rules: flag figures that need a second look (vs own trial balance 2569). up/down = allowed % change; up:0 = any increase
 const RULES = [
-  {g:'ucop', up:5, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
+  {g:'ucop', up:7, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
   {g:'ucpp', up:0, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
   {g:'ucip', est:true, up:20, down:20},
   {code:'4301020105.243', zero:true},
   {code:'5104020101.101', up:15, down:10},
   {code:'5104030205.101', up:15, down:10},
-  {code:'5104010110.101', up:15, down:15},
+  {code:'5104010110.101', up:25, down:0},
   {code:'4301020102.105', up:20, down:20},
   {g:'ssop', up:20, down:20},
   {g:'cgdip', up:20, down:20},
   {g:'lgoip', up:20, down:20},
   {g:'crip', up:20, minAmt:100000},
   {g:'crop222', up:20, minAmt:100000},
-  {g:'stpop', up:15, down:15},
   {g:'ucopout', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
   {code:'4313010199.105', up:20, down:20, nozero:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
 ];
@@ -569,7 +568,7 @@ function computeAlerts(){
       return; }
     if(!has69) return;
     const base = ruleValue(rule, c=>hist('2569',c)), c=pct(plan, base);
-    const lim = (rule.down!=null ? `เกณฑ์ ${rule.up?'+'+rule.up+'%':'ไม่เกินปี 2569'} / −${rule.down}%` : (rule.up ? `เกณฑ์ไม่เกิน +${rule.up}%` : 'เกณฑ์ไม่เกินปี 2569'));
+    const lim = (rule.down!=null ? `เกณฑ์ ${rule.up?'+'+rule.up+'%':'ไม่เกินปี 2569'} / ${rule.down?'−'+rule.down+'%':'ห้ามลดลง'}` : (rule.up ? `เกณฑ์ไม่เกิน +${rule.up}%` : 'เกณฑ์ไม่เกินปี 2569'));
     let bad=false;
     if(rule.minAmt!=null){ // increase only, and both % and baht thresholds
       const inc=plan-base; bad = inc>rule.minAmt && (c.k==='new' || (c.k==='up' && c.p>rule.up));
