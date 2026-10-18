@@ -529,11 +529,37 @@ const UCIP = {"06009":[27.1196,0.0,0.0,675.4034],"10713":[2026.5979,2135.3832,80
 const UCIP_ITEMS = [['SumAdjRW นอกเขต',10000,0],['SumAdjRW ทารกแรกเกิด น้ำหนัก <1,500 g',10000,1],['SumAdjRW ทารกแรกเกิด <1,500 g มีหัตถการราคาแพง',12000,2],['SumAdjRW ในเขต หัก Homeward (HT DM)',null,3]];
 function ucipEst(h){ const d=UCIP[h]; if(!d) return null; return UCIP_ITEMS.reduce((a,[n,rate,i])=>a+d[i]*(rate??st.ucRate),0); }
 // Review rules: flag figures that need a second look (vs own trial balance 2569). up/down = allowed % change; up:0 = any increase
+const EITHER_ZERO = [['4301020105.214','4301020105.229'],['4301020105.217','4301020105.257']];
 const RULES = [
   {g:'ucop', up:7, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
   {g:'ucpp', up:0, down:15, downNote:'ยกเว้นกรณีมีการถ่ายโอนเพิ่มเติม'},
   {g:'ucip', est:true, up:20, down:20},
   {code:'4301020105.243', zero:true},
+  {code:'4301020105.264', zero:true},
+  {code:'4301020105.266', zero:true},
+  {code:'4301020105.265', zero:true},
+  {code:'4301020105.229', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020104.807', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.705', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.317', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020105.257', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020104.405', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020104.803', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020105.231', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.319', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.505', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.507', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.510', nonpos:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020105.214', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020105.217', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020104.406', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020104.804', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020104.808', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.706', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020105.232', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.320', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.511', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
+  {code:'4301020106.519', nonneg:true, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ'},
   {code:'5104020101.101', up:15, down:10},
   {code:'5104030205.101', up:15, down:10},
   {code:'5104010110.101', up:25, down:0},
@@ -561,7 +587,8 @@ function computeAlerts(){
     const plan = ruleValue(rule, c=>st.plan[c]||0);
     const msg = rule.msg || 'ข้อมูลผิดปกติ โปรดทบทวน';
     if(rule.zero){ if(Math.abs(plan)>=0.005) ALERTS[key]={name, msg:'ให้แก้เลขช่องนี้เป็น 0', why:`แผน ${fmt.format(plan)} บาท`}; return; }
-    if(rule.nonneg){ if(plan < -0.005) ALERTS[key]={name, msg, why:`ยอดรวม ${fmt.format(plan)} บาท · ต้องมากกว่าหรือเท่ากับ 0`}; return; }
+    if(rule.nonneg){ if(plan < -0.005) ALERTS[key]={name, msg, why:`${rule.code?'แผน':'ยอดรวม'} ${fmt.format(plan)} บาท · ต้องมากกว่าหรือเท่ากับ 0`}; return; }
+    if(rule.nonpos){ if(plan > 0.005) ALERTS[key]={name, msg, why:`แผน ${fmt.format(plan)} บาท · ต้องน้อยกว่าหรือเท่ากับ 0`}; return; }
     if(rule.nozero && Math.abs(plan)<0.005){ ALERTS[key]={name, msg, why:'แผนเป็น 0'}; return; }
     if(rule.est){ // compare the plan with the UC IP estimate (AdjRW ปี 69 × new rates)
       if(!SHOW_UCIP_EST) return; const e=ucipEst(st.hosp); if(e==null || !e) return;
@@ -580,6 +607,14 @@ function computeAlerts(){
     else if(c.k==='up') bad = c.p > rule.up;
     else if(c.k==='down') bad = rule.down!=null && -c.p > rule.down;
     if(bad) ALERTS[key]={name, msg, why:`${c.k==='new'?'ปี 2569 เป็น 0':(c.p>0?'+':'')+c.p.toFixed(1)+'% จากปี 2569'} · ${lim}${c.k==='down'&&rule.downNote?' · *** '+rule.downNote+' ***':''}`};
+  });
+  // pairs where one of the two accounts must be 0
+  EITHER_ZERO.forEach(([c1,c2])=>{
+    const v1=st.plan[c1]||0, v2=st.plan[c2]||0; if(Math.abs(v1)<0.005 || Math.abs(v2)<0.005) return;
+    [[c1,c2],[c2,c1]].forEach(([c,o])=>{
+      const w=`ทั้ง ${c} และ ${o} ไม่เป็น 0 (${fmt.format(st.plan[c]||0)} / ${fmt.format(st.plan[o]||0)} บาท) · ต้องมีค่าใดค่าหนึ่งเป็น 0`;
+      ALERTS[c] = ALERTS[c] ? {...ALERTS[c], why: ALERTS[c].why+' · และ'+w} : {name:TB.acc[c]||c, msg:'ข้อมูลผิดปกติ โปรดตรวจสอบ', why:w};
+    });
   });
 }
 const alertBadge = key => { const a=ALERTS[key]; return a ? `<div class="alertmsg">⚠ ${esc(a.msg)} <span>(${esc(a.why)})</span></div>` : ''; };
